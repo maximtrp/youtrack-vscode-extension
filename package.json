@@ -3,7 +3,7 @@
   "publisher": "maximtrp",
   "displayName": "YouTrack for VS Code",
   "description": "Browse and manage issues in multiple YouTrack servers",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icon": "resources/youtrack.png",
   "author": {
     "name": "Maksim Terpilovskii",

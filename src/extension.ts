@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
 import { ServersProvider, ServerItem } from "./servers";
 import { AgilesProjectsProvider, AgileItem, ProjectItem } from "./agiles";
-import { SprintsIssuesProvider, IssueItem } from "./sprints";
+import { SprintsIssuesProvider } from "./sprints";
 import { RecentIssuesProvider } from "./recent";
+import { IssueItem } from "./sprints.items";
 import { YoutrackClient } from "./client";
 
 export function activate(context: vscode.ExtensionContext) {
