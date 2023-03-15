@@ -1,5 +1,5 @@
 {
-  "name": "youtrack",
+  "name": "youtrack-ext",
   "publisher": "maximtrp",
   "displayName": "YouTrack",
   "description": "Browse and manage issues in multiple YouTrack servers",
