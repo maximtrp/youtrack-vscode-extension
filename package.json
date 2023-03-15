@@ -1,7 +1,7 @@
 {
   "name": "youtrack-ext",
   "publisher": "maximtrp",
-  "displayName": "YouTrack",
+  "displayName": "YouTrack for VS Code",
   "description": "Browse and manage issues in multiple YouTrack servers",
   "version": "1.0.0",
   "icon": "resources/youtrack.png",
