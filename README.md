@@ -6,7 +6,7 @@ This extension provides basic integration between [YouTrack](https://www.jetbrai
 
 ## Installation
 
-The extension is available in [Visual Studio Marketplace]() and [Open VSX]().
+The extension is available in [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=maximtrp.youtrack-ext) and [Open VSX](https://open-vsx.org/extension/maximtrp/youtrack-ext).
 To use this extension, you should create a [personal access token](https://www.jetbrains.com/help/youtrack/standalone/Manage-Permanent-Token.html#obtain-permanent-token) (usually prefixed with `perm`).
 
 ## Features
