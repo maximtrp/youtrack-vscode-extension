@@ -1,0 +1,524 @@
+{
+  "name": "youtrack",
+  "publisher": "maximtrp",
+  "displayName": "YouTrack",
+  "description": "Browse and manage issues in multiple YouTrack servers",
+  "version": "1.0.0",
+  "icon": "resources/youtrack.png",
+  "author": {
+    "name": "Maksim Terpilovskii",
+    "url": "https://github.com/maximtrp"
+  },
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "license": "MIT",
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maximtrp/youtrack-vscode-extension.git"
+  },
+  "activationEvents": [],
+  "main": "./out/main.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "youtrack-container",
+          "title": "YouTrack",
+          "icon": "resources/youtrack.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "youtrack-servers",
+        "contents": "Please add a YouTrack server to use this extension.\n[Add a Server](command:youtrack.addServer)\nYour data will be kept by VSCode Secret Storage and will not be sent anywhere or synced."
+      }
+    ],
+    "configuration": [
+      {
+        "title": "YouTrack",
+        "properties": {
+          "youtrack.groupIssuesBy": {
+            "type": "string",
+            "default": "None",
+            "enum": [
+              "None",
+              "Priority",
+              "State",
+              "Type"
+            ],
+            "enumDescriptions": [
+              "Does not group issues in Sprints",
+              "Group issues by their priority",
+              "Group issues by their state (done, in progress, etc)",
+              "Group issues by their type (task, bug, etc)"
+            ]
+          },
+          "youtrack.sortOrder": {
+            "type": "string",
+            "default": "DESC",
+            "enum": [
+              "DESC",
+              "ASC"
+            ],
+            "enumDescriptions": [
+              "Descending",
+              "Ascending"
+            ]
+          },
+          "youtrack.showIssuesAssignedTo": {
+            "type": "string",
+            "default": "Anyone",
+            "enum": [
+              "Anyone",
+              "Me",
+              "Unassigned"
+            ]
+          },
+          "youtrack.sortIssuesBy": {
+            "type": "string",
+            "default": "Default",
+            "enum": [
+              "Default",
+              "Priority",
+              "State",
+              "Type",
+              "Votes",
+              "Created",
+              "Updated",
+              "Resolved Date"
+            ],
+            "enumDescriptions": [
+              "Does not sort issues",
+              "Sort issues by their priority",
+              "Sort issues by their state (done, in progress, etc)",
+              "Sort issues by their type (task, bug, etc)",
+              "Sort issues by their votes",
+              "Sort issues by their creation date",
+              "Sort issues by their update date",
+              "Sort issues by their resolved date"
+            ]
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "youtrack.addServer",
+        "title": "Add a Server",
+        "category": "YouTrack",
+        "icon": "$(add)"
+      },
+      {
+        "command": "youtrack.deleteServer",
+        "title": "Delete a Server",
+        "category": "YouTrack",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "youtrack.editServer",
+        "title": "Edit a Server",
+        "category": "YouTrack",
+        "icon": "$(pencil)"
+      },
+      {
+        "command": "youtrack.refreshAgiles",
+        "title": "Refresh",
+        "category": "YouTrack",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "youtrack.refreshSprints",
+        "title": "Refresh",
+        "category": "YouTrack",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "youtrack.refreshRecentIssues",
+        "title": "Refresh",
+        "category": "YouTrack",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "youtrack.createBranch",
+        "title": "Checkout/create a Branch",
+        "category": "YouTrack",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "youtrack.showIssueDescription",
+        "title": "Show Description",
+        "category": "YouTrack",
+        "icon": "$(note)"
+      },
+      {
+        "command": "youtrack.groupIssuesByState",
+        "title": "State",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.groupIssuesBy != State"
+      },
+      {
+        "command": "youtrack.groupIssuesByPriority",
+        "title": "Priority",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.groupIssuesBy != Priority"
+      },
+      {
+        "command": "youtrack.groupIssuesByType",
+        "title": "Type",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.groupIssuesBy != Type"
+      },
+      {
+        "command": "youtrack.groupIssuesByNone",
+        "title": "None",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.groupIssuesBy != None"
+      },
+      {
+        "command": "youtrack.sortIssuesByDefault",
+        "title": "Default",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.sortIssuesBy != Default"
+      },
+      {
+        "command": "youtrack.sortIssuesByPriority",
+        "title": "Priority",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.sortIssuesBy != Priority"
+      },
+      {
+        "command": "youtrack.sortIssuesByState",
+        "title": "State",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.sortIssuesBy != State"
+      },
+      {
+        "command": "youtrack.sortIssuesByType",
+        "title": "Type",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.sortIssuesBy != Type"
+      },
+      {
+        "command": "youtrack.sortIssuesByVotes",
+        "title": "Votes",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.sortIssuesBy != Votes"
+      },
+      {
+        "command": "youtrack.sortIssuesByCreated",
+        "title": "Created",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.sortIssuesBy != Created"
+      },
+      {
+        "command": "youtrack.sortIssuesByUpdated",
+        "title": "Updated",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.sortIssuesBy != Updated"
+      },
+      {
+        "command": "youtrack.sortIssuesByResolvedDate",
+        "title": "Resolved Date",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.sortIssuesBy != Resolved Date"
+      },
+      {
+        "command": "youtrack.showIssuesAssignedToMe",
+        "title": "Me",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.showIssuesAssignedTo != Me"
+      },
+      {
+        "command": "youtrack.showIssuesAssignedToAnyone",
+        "title": "Anyone",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.showIssuesAssignedTo != Anyone"
+      },
+      {
+        "command": "youtrack.showUnassignedIssues",
+        "title": "Unassigned",
+        "category": "YouTrack",
+        "enablement": "config.youtrack.showIssuesAssignedTo != Unassigned"
+      },
+      {
+        "command": "youtrack.updateIssueState",
+        "title": "Issue State",
+        "category": "YouTrack"
+      },
+      {
+        "command": "youtrack.updateIssuePriority",
+        "title": "Issue Priority",
+        "category": "YouTrack"
+      },
+      {
+        "command": "youtrack.updateIssueType",
+        "title": "Issue Type",
+        "category": "YouTrack"
+      },
+      {
+        "command": "youtrack.gotoIssuePage",
+        "title": "Go to Issue Page",
+        "category": "YouTrack"
+      },
+      {
+        "command": "youtrack.deleteIssue",
+        "title": "Delete an Issue",
+        "category": "YouTrack"
+      }
+    ],
+    "views": {
+      "youtrack-container": [
+        {
+          "id": "youtrack-servers",
+          "name": "Servers"
+        },
+        {
+          "id": "youtrack-agiles",
+          "name": "Agiles / Projects"
+        },
+        {
+          "id": "youtrack-sprints",
+          "name": "Sprints / Issues",
+          "visibility": "collapsed"
+        },
+        {
+          "id": "youtrack-recent-issues",
+          "name": "Recent Issues",
+          "visibility": "collapsed"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "youtrack.filter",
+        "label": "Filter",
+        "icon": "$(filter)"
+      },
+      {
+        "id": "youtrack.filter.groupby",
+        "label": "Group by"
+      },
+      {
+        "id": "youtrack.filter.sortby",
+        "label": "Sort by"
+      },
+      {
+        "id": "youtrack.filter.assignedto",
+        "label": "Assigned to"
+      },
+      {
+        "id": "youtrack.issue",
+        "label": "More",
+        "icon": "$(more)"
+      },
+      {
+        "id": "youtrack.updateIssue",
+        "label": "Update"
+      },
+      {
+        "id": "youtrack.servers",
+        "label": "More",
+        "icon": "$(more)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "youtrack.addServer",
+          "when": "view == youtrack-servers",
+          "group": "navigation"
+        },
+        {
+          "command": "youtrack.refreshAgiles",
+          "when": "view == youtrack-agiles",
+          "group": "navigation"
+        },
+        {
+          "command": "youtrack.refreshSprints",
+          "when": "view == youtrack-sprints",
+          "group": "navigation"
+        },
+        {
+          "command": "youtrack.refreshRecentIssues",
+          "when": "view == youtrack-recent-issues",
+          "group": "navigation"
+        },
+        {
+          "submenu": "youtrack.filter",
+          "when": "view == youtrack-sprints || view == youtrack-recent-issues",
+          "group": "navigation"
+        }
+      ],
+      "youtrack.servers": [
+        {
+          "command": "youtrack.editServer",
+          "group": "servers@1"
+        },
+        {
+          "command": "youtrack.deleteServer",
+          "group": "servers@2"
+        }
+      ],
+      "youtrack.filter.groupby": [
+        {
+          "command": "youtrack.groupIssuesByNone"
+        },
+        {
+          "command": "youtrack.groupIssuesByState"
+        },
+        {
+          "command": "youtrack.groupIssuesByPriority"
+        },
+        {
+          "command": "youtrack.groupIssuesByType"
+        }
+      ],
+      "youtrack.filter.assignedto": [
+        {
+          "command": "youtrack.showIssuesAssignedToMe"
+        },
+        {
+          "command": "youtrack.showIssuesAssignedToAnyone"
+        },
+        {
+          "command": "youtrack.showUnassignedIssues"
+        }
+      ],
+      "youtrack.filter.sortby": [
+        {
+          "command": "youtrack.sortIssuesByDefault"
+        },
+        {
+          "command": "youtrack.sortIssuesByState"
+        },
+        {
+          "command": "youtrack.sortIssuesByPriority"
+        },
+        {
+          "command": "youtrack.sortIssuesByType"
+        },
+        {
+          "command": "youtrack.sortIssuesByVotes"
+        },
+        {
+          "command": "youtrack.sortIssuesByCreated",
+          "group": "dates"
+        },
+        {
+          "command": "youtrack.sortIssuesByUpdated",
+          "group": "dates"
+        },
+        {
+          "command": "youtrack.sortIssuesByResolvedDate",
+          "group": "dates"
+        }
+      ],
+      "youtrack.filter": [
+        {
+          "submenu": "youtrack.filter.groupby",
+          "when": "view == youtrack-sprints"
+        },
+        {
+          "submenu": "youtrack.filter.sortby",
+          "when": "view == youtrack-sprints || view == youtrack-recent-issues"
+        },
+        {
+          "submenu": "youtrack.filter.assignedto",
+          "when": "view == youtrack-sprints || view == youtrack-recent-issues"
+        }
+      ],
+      "youtrack.updateIssue": [
+        {
+          "command": "youtrack.updateIssuePriority",
+          "group": "Update"
+        },
+        {
+          "command": "youtrack.updateIssueType",
+          "group": "Update"
+        },
+        {
+          "command": "youtrack.updateIssueState",
+          "group": "Update"
+        }
+      ],
+      "youtrack.issue": [
+        {
+          "command": "youtrack.gotoIssuePage",
+          "when": "viewItem == issue",
+          "group": "issue@1"
+        },
+        {
+          "submenu": "youtrack.updateIssue",
+          "group": "issue@2"
+        },
+        {
+          "command": "youtrack.deleteIssue",
+          "when": "viewItem == issue",
+          "group": "issue@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "youtrack.createBranch",
+          "when": "viewItem == issue",
+          "group": "inline"
+        },
+        {
+          "submenu": "youtrack.issue",
+          "when": "viewItem == issue",
+          "group": "inline"
+        },
+        {
+          "submenu": "youtrack.servers",
+          "when": "view == youtrack-servers",
+          "group": "inline"
+        },
+        {
+          "command": "youtrack.editServer",
+          "when": "view == youtrack-servers",
+          "group": "servers@1"
+        },
+        {
+          "command": "youtrack.deleteServer",
+          "when": "view == youtrack-servers",
+          "group": "servers@2"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint && npm run esbuild-base",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./",
+    "deploy": "vsce publish --yarn"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.60.0",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "@vscode/test-electron": "^2.2.3",
+    "esbuild": "^0.17.11",
+    "eslint": "^8.34.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "axios": "^1.3.4"
+  }
+}
