@@ -3,7 +3,7 @@
   "publisher": "maximtrp",
   "displayName": "YouTrack for VS Code",
   "description": "Browse and manage issues in multiple YouTrack servers",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "icon": "resources/youtrack.png",
   "author": {
     "name": "Maksim Terpilovskii",
@@ -100,7 +100,7 @@
               "Sort issues by their votes",
               "Sort issues by their creation date",
               "Sort issues by their update date",
-              "Sort issues by their resolved date"
+              "Sort issues by their resolve date"
             ]
           }
         }
@@ -148,6 +148,12 @@
         "title": "Checkout/create a Branch",
         "category": "YouTrack",
         "icon": "$(git-branch)"
+      },
+      {
+        "command": "youtrack.addIssue",
+        "title": "Add an Issue",
+        "category": "YouTrack",
+        "icon": "$(add)"
       },
       {
         "command": "youtrack.showIssueDescription",
@@ -352,6 +358,11 @@
           "submenu": "youtrack.filter",
           "when": "view == youtrack-sprints || view == youtrack-recent-issues",
           "group": "navigation"
+        },
+        {
+          "command": "youtrack.addIssue",
+          "when": "view == youtrack-recent-issues || view == youtrack-sprints",
+          "group": "navigation"
         }
       ],
       "youtrack.servers": [
@@ -449,7 +460,6 @@
       "youtrack.issue": [
         {
           "command": "youtrack.gotoIssuePage",
-          "when": "viewItem == issue",
           "group": "issue@1"
         },
         {
@@ -458,20 +468,34 @@
         },
         {
           "command": "youtrack.deleteIssue",
-          "when": "viewItem == issue",
           "group": "issue@3"
         }
       ],
       "view/item/context": [
+        {
+          "submenu": "youtrack.issue",
+          "when": "viewItem == issue",
+          "group": "inline"
+        },
         {
           "command": "youtrack.createBranch",
           "when": "viewItem == issue",
           "group": "inline"
         },
         {
-          "submenu": "youtrack.issue",
+          "command": "youtrack.gotoIssuePage",
           "when": "viewItem == issue",
-          "group": "inline"
+          "group": "issue@1"
+        },
+        {
+          "submenu": "youtrack.updateIssue",
+          "when": "viewItem == issue",
+          "group": "issue@2"
+        },
+        {
+          "command": "youtrack.deleteIssue",
+          "when": "viewItem == issue",
+          "group": "issue@3"
         },
         {
           "submenu": "youtrack.servers",

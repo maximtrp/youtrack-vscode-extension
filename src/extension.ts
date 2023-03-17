@@ -62,98 +62,112 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  vscode.commands.registerCommand("youtrack.groupIssuesByState", async () => {
+  let commandGroupIssuesByState = vscode.commands.registerCommand("youtrack.groupIssuesByState", async () => {
     await setConfiguration("youtrack.groupIssuesBy", "State");
     sprintIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.groupIssuesByPriority", async () => {
+  let commandGroupIssuesByPriority = vscode.commands.registerCommand("youtrack.groupIssuesByPriority", async () => {
     await setConfiguration("youtrack.groupIssuesBy", "Priority");
     sprintIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.groupIssuesByType", async () => {
+  let commandGroupIssuesByType = vscode.commands.registerCommand("youtrack.groupIssuesByType", async () => {
     await setConfiguration("youtrack.groupIssuesBy", "Type");
     sprintIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.groupIssuesByNone", async () => {
+  let commandGroupIssuesByNone = vscode.commands.registerCommand("youtrack.groupIssuesByNone", async () => {
     await setConfiguration("youtrack.groupIssuesBy", "None");
     sprintIssuesProvider.refresh(youtrackClient);
   });
 
-  vscode.commands.registerCommand("youtrack.sortIssuesByDefault", async () => {
+  let commandSortIssuesByDefault = vscode.commands.registerCommand("youtrack.sortIssuesByDefault", async () => {
     await setConfiguration("youtrack.sortIssuesBy", "Default");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.sortIssuesByPriority", async () => {
+  let commandSortIssuesByPriority = vscode.commands.registerCommand("youtrack.sortIssuesByPriority", async () => {
     await setConfiguration("youtrack.sortIssuesBy", "Priority");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.sortIssuesByState", async () => {
+  let commandSortIssuesByState = vscode.commands.registerCommand("youtrack.sortIssuesByState", async () => {
     await setConfiguration("youtrack.sortIssuesBy", "State");
     recentIssuesProvider.refresh(youtrackClient);
     sprintIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.sortIssuesByType", async () => {
+  let commandSortIssuesByType = vscode.commands.registerCommand("youtrack.sortIssuesByType", async () => {
     await setConfiguration("youtrack.sortIssuesBy", "Type");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.sortIssuesByVotes", async () => {
+  let commandSortIssuesByVotes = vscode.commands.registerCommand("youtrack.sortIssuesByVotes", async () => {
     await setConfiguration("youtrack.sortIssuesBy", "Votes");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.sortIssuesByCreated", async () => {
+  let commandSortIssuesByCreated = vscode.commands.registerCommand("youtrack.sortIssuesByCreated", async () => {
     await setConfiguration("youtrack.sortIssuesBy", "Created");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.sortIssuesByUpdated", async () => {
+  let commandSortIssuesByUpdated = vscode.commands.registerCommand("youtrack.sortIssuesByUpdated", async () => {
     await setConfiguration("youtrack.sortIssuesBy", "Updated");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.sortIssuesByResolvedDate", async () => {
-    await setConfiguration("youtrack.sortIssuesBy", "Resolved Date");
-    sprintIssuesProvider.refresh(youtrackClient);
-    recentIssuesProvider.refresh(youtrackClient);
-  });
+  let commandSortIssuesByResolvedDate = vscode.commands.registerCommand(
+    "youtrack.sortIssuesByResolvedDate",
+    async () => {
+      await setConfiguration("youtrack.sortIssuesBy", "Resolved Date");
+      sprintIssuesProvider.refresh(youtrackClient);
+      recentIssuesProvider.refresh(youtrackClient);
+    }
+  );
 
-  vscode.commands.registerCommand("youtrack.showIssuesAssignedToMe", async () => {
+  let commandShowIssuesAssignedToMe = vscode.commands.registerCommand("youtrack.showIssuesAssignedToMe", async () => {
     await setConfiguration("youtrack.showIssuesAssignedTo", "Me");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.showIssuesAssignedToAnyone", async () => {
-    await setConfiguration("youtrack.showIssuesAssignedTo", "Anyone");
-    sprintIssuesProvider.refresh(youtrackClient);
-    recentIssuesProvider.refresh(youtrackClient);
-  });
-  vscode.commands.registerCommand("youtrack.showUnassignedIssues", async () => {
+  let commandShowIssuesAssignedToAnyone = vscode.commands.registerCommand(
+    "youtrack.showIssuesAssignedToAnyone",
+    async () => {
+      await setConfiguration("youtrack.showIssuesAssignedTo", "Anyone");
+      sprintIssuesProvider.refresh(youtrackClient);
+      recentIssuesProvider.refresh(youtrackClient);
+    }
+  );
+  let commandShowUnassignedIssues = vscode.commands.registerCommand("youtrack.showUnassignedIssues", async () => {
     await setConfiguration("youtrack.showIssuesAssignedTo", "Unassigned");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.updateIssuePriority", async (item: IssueItem) => {
-    await sprintIssuesProvider.updateIssueEnumBundle(item.issue, "Priority", "Priorities");
-    sprintIssuesProvider.refresh(youtrackClient);
-    recentIssuesProvider.refresh(youtrackClient);
-  });
-  vscode.commands.registerCommand("youtrack.updateIssueType", async (item: IssueItem) => {
+  let commandUpdateIssuePriority = vscode.commands.registerCommand(
+    "youtrack.updateIssuePriority",
+    async (item: IssueItem) => {
+      await sprintIssuesProvider.updateIssueEnumBundle(item.issue, "Priority", "Priorities");
+      sprintIssuesProvider.refresh(youtrackClient);
+      recentIssuesProvider.refresh(youtrackClient);
+    }
+  );
+  let commandUpdateIssueType = vscode.commands.registerCommand("youtrack.updateIssueType", async (item: IssueItem) => {
     await sprintIssuesProvider.updateIssueEnumBundle(item.issue, "Type", "Types");
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.updateIssueState", async (item: IssueItem) => {
-    await sprintIssuesProvider.updateIssueState(item.issue);
-    sprintIssuesProvider.refresh(youtrackClient);
-    recentIssuesProvider.refresh(youtrackClient);
-  });
+  let commandUpdateIssueState = vscode.commands.registerCommand(
+    "youtrack.updateIssueState",
+    async (item: IssueItem) => {
+      await sprintIssuesProvider.updateIssueState(item.issue);
+      sprintIssuesProvider.refresh(youtrackClient);
+      recentIssuesProvider.refresh(youtrackClient);
+    }
+  );
 
-  vscode.commands.registerCommand("youtrack.addServer", () => serversProvider.addServer());
-  vscode.commands.registerCommand("youtrack.editServer", (server) => serversProvider.editServer(server));
-  vscode.commands.registerCommand("youtrack.deleteServer", (server) => {
+  let commandAddServer = vscode.commands.registerCommand("youtrack.addServer", () => serversProvider.addServer());
+  let commandEditServer = vscode.commands.registerCommand("youtrack.editServer", (server) =>
+    serversProvider.editServer(server)
+  );
+  let commandDeleteServer = vscode.commands.registerCommand("youtrack.deleteServer", (server) => {
     vscode.window
       .showInformationMessage("Are you sure you want to delete this server?", "Yes", "No")
       .then(async (answer) => {
@@ -175,20 +189,82 @@ export function activate(context: vscode.ExtensionContext) {
       });
   });
 
-  vscode.commands.registerCommand("youtrack.refreshAgiles", () => agileProjectsProvider.refresh(youtrackClient));
-  vscode.commands.registerCommand("youtrack.refreshSprints", () => sprintIssuesProvider.refresh(youtrackClient));
-  vscode.commands.registerCommand("youtrack.refreshRecentIssues", () => recentIssuesProvider.refresh(youtrackClient));
-  vscode.commands.registerCommand("youtrack.createBranch", (issue) => sprintIssuesProvider.createBranch(issue));
-  vscode.commands.registerCommand("youtrack.gotoIssuePage", (issue) => sprintIssuesProvider.gotoIssuePage(issue));
-  vscode.commands.registerCommand("youtrack.deleteIssue", async (issue) => {
+  let commandRefreshAgiles = vscode.commands.registerCommand("youtrack.refreshAgiles", () =>
+    agileProjectsProvider.refresh(youtrackClient)
+  );
+  let commandRefreshSprints = vscode.commands.registerCommand("youtrack.refreshSprints", () =>
+    sprintIssuesProvider.refresh(youtrackClient)
+  );
+  let commandRefreshRecentIssues = vscode.commands.registerCommand("youtrack.refreshRecentIssues", () =>
+    recentIssuesProvider.refresh(youtrackClient)
+  );
+  let commandCreateBranch = vscode.commands.registerCommand("youtrack.createBranch", (issue) =>
+    sprintIssuesProvider.createBranch(issue)
+  );
+  let commandAddIssue = vscode.commands.registerCommand("youtrack.addIssue", async () => {
+    await sprintIssuesProvider.addIssue();
+    sprintIssuesProvider.refresh(youtrackClient);
+    recentIssuesProvider.refresh(youtrackClient);
+  });
+  let commandGotoIssuePage = vscode.commands.registerCommand("youtrack.gotoIssuePage", (issue) =>
+    sprintIssuesProvider.gotoIssuePage(issue)
+  );
+  let commandDeleteIssue = vscode.commands.registerCommand("youtrack.deleteIssue", async (issue) => {
     await sprintIssuesProvider.deleteIssue(issue);
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  vscode.commands.registerCommand("youtrack.showIssueDescription", (description: string) => {
-    const panel = vscode.window.createWebviewPanel("issueDescription", "Issue Description", vscode.ViewColumn.One, {});
-    panel.webview.html = description;
-  });
+  let commandShowIssueDescription = vscode.commands.registerCommand(
+    "youtrack.showIssueDescription",
+    (description: string) => {
+      const panel = vscode.window.createWebviewPanel(
+        "issueDescription",
+        "Issue Description",
+        vscode.ViewColumn.One,
+        {}
+      );
+      panel.webview.html = description;
+    }
+  );
+
+  context.subscriptions.push(
+    ...[
+      serversTree,
+      agileProjectsTree,
+      commandAddServer,
+      commandEditServer,
+      commandGroupIssuesByState,
+      commandGroupIssuesByPriority,
+      commandGroupIssuesByType,
+      commandGroupIssuesByNone,
+      commandSortIssuesByDefault,
+      commandSortIssuesByPriority,
+      commandSortIssuesByState,
+      commandSortIssuesByType,
+      commandSortIssuesByVotes,
+      commandSortIssuesByCreated,
+      commandSortIssuesByUpdated,
+      commandSortIssuesByResolvedDate,
+      commandShowIssuesAssignedToMe,
+      commandShowIssuesAssignedToAnyone,
+      commandShowUnassignedIssues,
+      commandUpdateIssuePriority,
+      commandUpdateIssueType,
+      commandUpdateIssueState,
+      commandAddServer,
+      commandEditServer,
+      commandDeleteServer,
+      commandRefreshAgiles,
+      commandRefreshSprints,
+      commandRefreshRecentIssues,
+      commandCreateBranch,
+      commandAddIssue,
+      commandDeleteServer,
+      commandGotoIssuePage,
+      commandDeleteIssue,
+      commandShowIssueDescription,
+    ]
+  );
 }
 
 export function deactivate() {}

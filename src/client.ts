@@ -28,12 +28,12 @@ export class YoutrackClient {
     }
   }
 
-  async _post(url: string, params?: object): Promise<any | null> {
+  async _post(url: string, data?: object, params?: object): Promise<any | null> {
     let result: any | null = null;
     try {
       // console.log(url);
       // console.log(params);
-      result = (await this.client.post(url, params, { headers: { "Content-Type": "application/json" } })).data;
+      result = (await this.client.post(url, data, { params, headers: { "Content-Type": "application/json" } })).data;
       // console.log(result);
       return result;
     } catch (error: any) {
@@ -74,7 +74,7 @@ export class YoutrackClient {
 
   async getEnumBundles(): Promise<void> {
     this.enumBundles = await this._get("/api/admin/customFieldSettings/bundles/enum", {
-      fields: ["name", "id", "values(name,id,description,ordinal)", "isUpdateable"].join(","),
+      fields: ["name", "id", "values(name,id,description,bundle(name),ordinal)", "isUpdateable"].join(","),
     });
   }
 
@@ -118,8 +118,8 @@ export class YoutrackClient {
     });
   }
 
-  async deleteIssue(projectId: string, issueId: string): Promise<null> {
-    return await this._delete(`/api/admin/projects/${projectId}/issues/${issueId}`);
+  async deleteIssue(issueId: string): Promise<null> {
+    return await this._delete(`/api/issues/${issueId}`);
   }
 
   async updateIssueSingleEnum(
@@ -151,5 +151,13 @@ export class YoutrackClient {
 
   async getMe(): Promise<void> {
     this.self = await this._get("/api/users/me", { fields: ["id", "login", "fullName", "banned"].join(",") });
+  }
+
+  async addIssue(data?: object, params?: object): Promise<Issue> {
+    return await this._post(`/api/issues`, data, params);
+  }
+
+  async addIssueToSprint(agileId: string, sprintId: string, issueId: string): Promise<Issue> {
+    return await this._post(`/api/agiles/${agileId}/sprints/${sprintId}/issues`, { id: issueId, $type: "Issue" });
   }
 }

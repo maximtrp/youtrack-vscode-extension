@@ -119,6 +119,112 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
     return [new None("Select server to view repositories")];
   }
 
+  async addIssue() {
+    if (this.client && this.project) {
+      const summary = (await vscode.window.showInputBox({ ignoreFocusOut: true, title: "Issue summary" })) || "";
+      if (!summary) {
+        vscode.window.showInformationMessage("Issue was not created due to the empty summary");
+        return;
+      }
+
+      const description = await vscode.window.showInputBox({
+        ignoreFocusOut: true,
+        title: "Issue description (optional)",
+      });
+
+      let issue: NewIssue = {
+        summary,
+        description,
+        project: {
+          id: this.project.id,
+        },
+        customFields: [],
+      };
+
+      // Issue state
+      if (this.columnSettings) {
+        const states: string[] = this.columnSettings.columns
+          .flatMap((col) => col.fieldValues)
+          .map((cfv) => cfv.name || cfv.id);
+
+        const state: string | undefined = await vscode.window.showQuickPick(states, {
+          canPickMany: false,
+          ignoreFocusOut: true,
+        });
+
+        if (state) {
+          issue.customFields.push({
+            value: {
+              name: state,
+              $type: "StateBundleElement",
+            },
+            name: "State",
+            $type: "StateIssueCustomField",
+          });
+        }
+      }
+
+      // // Issue enum fields
+      if (this.enumBundles) {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const bundlesDict: { [key: string]: string } = { Types: "Type", Priorities: "Priority" };
+
+        for (let bundle of this.enumBundles) {
+          const values: string[] = bundle.values.map((item) => item.name || "").filter((item) => !!item);
+
+          const value = await vscode.window.showQuickPick(values, {
+            canPickMany: false,
+            ignoreFocusOut: true,
+            title: "Issue " + bundle.name,
+          });
+          if (!value) {
+            continue;
+          } else {
+            issue.customFields.push({
+              value: {
+                name: value,
+                $type: "EnumBundleElement",
+              },
+              name: bundlesDict[bundle.name],
+              $type: "SingleEnumIssueCustomField",
+            });
+          }
+        }
+      }
+
+      let createdIssue: Issue;
+      try {
+        // Creating an issue
+        createdIssue = await this.client.addIssue(issue, { fields: "id" });
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`Issue was not created due to the error: ${error.message}`);
+        return;
+      }
+
+      // Adding issue to a sprint
+      if (this.agile && this.sprints) {
+        const sprints: string[] = this.sprints.map((sprint) => sprint.name || "").filter((name) => !!name);
+        const selectedSprint: string | undefined = await vscode.window.showQuickPick(sprints, {
+          canPickMany: false,
+          ignoreFocusOut: true,
+        });
+
+        if (selectedSprint) {
+          const selectedSprintId = this.sprints.find((sprint) => sprint.name === selectedSprint)!.id;
+          try {
+            await this.client.addIssueToSprint(this.agile.id, selectedSprintId, createdIssue.id);
+          } catch (error: any) {
+            vscode.window.showErrorMessage(
+              `Issue was not added to ${selectedSprint} due to this error: ${error.message}`
+            );
+          }
+        }
+      }
+    } else {
+      vscode.window.showInformationMessage("Please select a project to add an issue");
+    }
+  }
+
   gotoIssuePage(item: IssueItem) {
     if (this.client && this.agile) {
       const issueUrl = `${this.client.url}/agiles/${this.agile.id}/current?issue=${item.issue.id}`;
@@ -127,12 +233,12 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
   }
 
   async deleteIssue(item: IssueItem) {
-    if (this.client && this.project) {
+    if (this.client) {
       const confirm: boolean =
         (await vscode.window.showInformationMessage("Do you want to delete this issue?", "Yes", "No")) === "Yes";
       if (confirm) {
         try {
-          await this.client.deleteIssue(this.project.id, item.issue.id);
+          await this.client.deleteIssue(item.issue.id);
         } catch (e: any) {
           vscode.window.showWarningMessage(`Issue was not deleted due to the error: ${e.message}`);
         }

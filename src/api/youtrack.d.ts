@@ -61,9 +61,18 @@ interface Issue {
   readonly customFields?: IssueCustomField[];
 }
 
+interface NewIssue {
+  summary: string;
+  description?: string;
+  project: { id: string };
+  customFields: IssueCustomField[];
+}
+
 interface IssueCustomField {
   name?: string;
+  $type?: string;
   value?: any;
+  id?: string;
 }
 
 interface State {
