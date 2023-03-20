@@ -37,7 +37,7 @@ export class YoutrackClient {
       // console.log(result);
       return result;
     } catch (error: any) {
-      console.log(error.toJSON());
+      // console.log(error.toJSON());
       // console.log(error.request as ClientRequest);
       throw error;
     }

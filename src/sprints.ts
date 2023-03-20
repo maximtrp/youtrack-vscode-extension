@@ -38,7 +38,7 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
   }
 
   async getPriorities(element: SprintItem) {
-    console.log(this.enumBundles);
+    // console.log(this.enumBundles);
     if (this.enumBundles) {
       const priorities = (this.enumBundles.find((bundle) => bundle.name === "Priorities") || {}).values;
       if (priorities) {
@@ -165,32 +165,32 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
       }
 
       // // Issue enum fields
-      if (this.enumBundles) {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const bundlesDict: { [key: string]: string } = { Types: "Type", Priorities: "Priority" };
+      // if (this.enumBundles) {
+      //   // eslint-disable-next-line @typescript-eslint/naming-convention
+      //   const bundlesDict: { [key: string]: string } = { Types: "Type", Priorities: "Priority" };
 
-        for (let bundle of this.enumBundles) {
-          const values: string[] = bundle.values.map((item) => item.name || "").filter((item) => !!item);
+      //   for (let bundle of this.enumBundles) {
+      //     const values: string[] = bundle.values.map((item) => item.name || "").filter((item) => !!item);
 
-          const value = await vscode.window.showQuickPick(values, {
-            canPickMany: false,
-            ignoreFocusOut: true,
-            title: "Issue " + bundle.name,
-          });
-          if (!value) {
-            continue;
-          } else {
-            issue.customFields.push({
-              value: {
-                name: value,
-                $type: "EnumBundleElement",
-              },
-              name: bundlesDict[bundle.name],
-              $type: "SingleEnumIssueCustomField",
-            });
-          }
-        }
-      }
+      //     const value = await vscode.window.showQuickPick(values, {
+      //       canPickMany: false,
+      //       ignoreFocusOut: true,
+      //       title: "Issue " + bundle.name,
+      //     });
+      //     if (!value) {
+      //       continue;
+      //     } else {
+      //       issue.customFields.push({
+      //         value: {
+      //           name: value,
+      //           $type: "EnumBundleElement",
+      //         },
+      //         name: bundlesDict[bundle.name],
+      //         $type: "SingleEnumIssueCustomField",
+      //       });
+      //     }
+      //   }
+      // }
 
       let createdIssue: Issue;
       try {
@@ -323,6 +323,7 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
     this.columnSettings = columnSettings;
   }
   setEnumBundles(enumBundles?: EnumBundle[]) {
+    // console.log(enumBundles);
     this.enumBundles = enumBundles;
   }
   setProject(projects?: Project) {

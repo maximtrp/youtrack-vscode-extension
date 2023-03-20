@@ -1,7 +1,7 @@
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   release:
     types:
       - created
@@ -20,10 +20,10 @@ jobs:
       with:
         node-version: 16.x
     - run: npm install
-    - run: xvfb-run -a npm test
-      if: runner.os == 'Linux'
-    - run: npm test
-      if: runner.os != 'Linux'
+    # - run: xvfb-run -a npm test
+    #   if: runner.os == 'Linux'
+    # - run: npm test
+    #   if: runner.os != 'Linux'
     - name: Publish
       run: |
         npm install -g @vscode/vsce

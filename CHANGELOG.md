@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.1 (2023-03-20)
+
+- Optimized issue creation routine.
+
 ## 1.1.0 (2023-03-17)
 
 - Added context menus to issue items.
