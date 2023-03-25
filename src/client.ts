@@ -122,13 +122,8 @@ export class YoutrackClient {
     return await this._delete(`/api/issues/${issueId}`);
   }
 
-  async updateIssueSingleEnum(
-    projectId: string,
-    issueId: string,
-    name: string,
-    value: string
-  ): Promise<Issue[] | null> {
-    return await this._post(`/api/admin/projects/${projectId}/issues/${issueId}`, {
+  async updateIssueSingleEnum(issueId: string, name: string, value: string): Promise<Issue[] | null> {
+    return await this._post(`/api/issues/${issueId}`, {
       customFields: [
         {
           value: {
@@ -151,6 +146,10 @@ export class YoutrackClient {
 
   async getMe(): Promise<void> {
     this.self = await this._get("/api/users/me", { fields: ["id", "login", "fullName", "banned"].join(",") });
+  }
+
+  async updateIssue(issueId: string, data?: object, params?: object): Promise<Issue> {
+    return await this._post(`/api/issues/${issueId}`, data, params);
   }
 
   async addIssue(data?: object, params?: object): Promise<Issue> {

@@ -206,6 +206,11 @@ export function activate(context: vscode.ExtensionContext) {
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
+  let commandEditIssueSummary = vscode.commands.registerCommand("youtrack.editIssueSummary", async (issue) => {
+    await sprintIssuesProvider.editIssueSummary(issue);
+    sprintIssuesProvider.refresh(youtrackClient);
+    recentIssuesProvider.refresh(youtrackClient);
+  });
   let commandGotoIssuePage = vscode.commands.registerCommand("youtrack.gotoIssuePage", (issue) =>
     sprintIssuesProvider.gotoIssuePage(issue)
   );
@@ -248,6 +253,7 @@ export function activate(context: vscode.ExtensionContext) {
       commandShowIssuesAssignedToMe,
       commandShowIssuesAssignedToAnyone,
       commandShowUnassignedIssues,
+      commandEditIssueSummary,
       commandUpdateIssuePriority,
       commandUpdateIssueType,
       commandUpdateIssueState,

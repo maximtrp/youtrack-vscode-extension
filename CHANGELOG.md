@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.2 (2023-03-25)
+
+- Added new context menu option to edit issue summary.
+
 ## 1.1.1 (2023-03-20)
 
 - Optimized issue creation routine.

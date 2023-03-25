@@ -225,6 +225,25 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
     }
   }
 
+  async editIssueSummary(item: IssueItem) {
+    if (this.client) {
+      let summary = await vscode.window.showInputBox({
+        ignoreFocusOut: true,
+        title: "Enter issue summary",
+        value: item.issue.summary,
+      });
+      if (!summary) {
+        vscode.window.showInformationMessage("Issue summary was not updated");
+        return;
+      }
+      try {
+        await this.client.updateIssue(item.issue.id, { summary });
+      } catch (e) {
+        vscode.window.showWarningMessage(`Issue was not updated due to this error: ${e}`);
+      }
+    }
+  }
+
   gotoIssuePage(item: IssueItem) {
     if (this.client && this.agile) {
       const issueUrl = `${this.client.url}/agiles/${this.agile.id}/current?issue=${item.issue.id}`;
@@ -266,7 +285,7 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
   }
 
   async updateIssueEnumBundle(issue: Issue, name: string, bundleName: string) {
-    if (this.client && this.project && this.enumBundles) {
+    if (this.client && this.enumBundles) {
       const values: string[] = (
         this.enumBundles.find((bundle) => bundle.name === bundleName) || { values: [] }
       ).values.map((item) => item.name || item.id);
@@ -278,7 +297,7 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
 
       if (value) {
         try {
-          await this.client.updateIssueSingleEnum(this.project.id, issue.id, name, value);
+          await this.client.updateIssueSingleEnum(issue.id, name, value);
         } catch (e) {
           vscode.window.showWarningMessage(`Issue was not updated due to this error: ${e}`);
         }

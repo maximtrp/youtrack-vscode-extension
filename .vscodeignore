@@ -13,3 +13,4 @@ dist/
 node_modules/
 out/
 !out/main.js
+test-resources/
