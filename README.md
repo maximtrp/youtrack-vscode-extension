@@ -22,6 +22,25 @@ To use this extension, you should create a [personal access token](https://www.j
 * Updating issue state, priority or type
 * Creating or checking out a branch for an issue
 
+## Web Extension
+
+To use this extension in web environment ([VS Code for Web](https://vscode.dev/)), you must set CORS parameters using [this API](https://www.jetbrains.com/help/youtrack/devportal/resource-api-admin-globalSettings-restSettings.html).
+
+For example, you can make a similar request using [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client):
+
+```
+@SERVER = https://your.youtrack.domain
+@TOKEN = perm:...
+
+POST {{SERVER}}/api/admin/globalSettings/restSettings
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+{
+  "allowedOrigins": "https://vscode.dev"
+}
+```
+
 ## Copyright attributions
 
 Copyright © 2023 JetBrains s.r.o. [YouTrack](https://www.jetbrains.com/youtrack/) and the YouTrack logo are registered trademarks of [JetBrains s.r.o](https://www.jetbrains.com).

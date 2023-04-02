@@ -5,7 +5,7 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "vscode:prepublish",
+      "script": "watch",
       "problemMatcher": "$tsc-watch",
       "isBackground": true,
       "presentation": {

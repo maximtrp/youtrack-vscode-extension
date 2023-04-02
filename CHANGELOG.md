@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.2.0 (2023-04-02)
+
+- Extension bundler changed to `webpack`.
+- Extension can now be used in a web environment ([VS Code for Web](https://vscode.dev)). Be sure to [set CORS settings](README.md#web-extension) for your youtrack server.
+
 ## 1.1.2 (2023-03-25)
 
 - Added new context menu option to edit issue summary.

@@ -12,5 +12,6 @@ dist/
 .github/
 node_modules/
 out/
-!out/main.js
+!out/extension.js
+!out/web-extension.js
 test-resources/
