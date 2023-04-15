@@ -206,8 +206,13 @@ export function activate(context: vscode.ExtensionContext) {
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
-  let commandEditIssueSummary = vscode.commands.registerCommand("youtrack.editIssueSummary", async (issue) => {
-    await sprintIssuesProvider.editIssueSummary(issue);
+  let commandUpdateIssueSummary = vscode.commands.registerCommand("youtrack.updateIssueSummary", async (issue) => {
+    await sprintIssuesProvider.updateIssueSummary(issue);
+    sprintIssuesProvider.refresh(youtrackClient);
+    recentIssuesProvider.refresh(youtrackClient);
+  });
+  let commandUpdateIssueAssignee = vscode.commands.registerCommand("youtrack.updateIssueAssignee", async (issue) => {
+    await sprintIssuesProvider.updateIssueAssignee(issue);
     sprintIssuesProvider.refresh(youtrackClient);
     recentIssuesProvider.refresh(youtrackClient);
   });
@@ -253,7 +258,8 @@ export function activate(context: vscode.ExtensionContext) {
       commandShowIssuesAssignedToMe,
       commandShowIssuesAssignedToAnyone,
       commandShowUnassignedIssues,
-      commandEditIssueSummary,
+      commandUpdateIssueAssignee,
+      commandUpdateIssueSummary,
       commandUpdateIssuePriority,
       commandUpdateIssueType,
       commandUpdateIssueState,

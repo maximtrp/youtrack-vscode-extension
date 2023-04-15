@@ -3,7 +3,7 @@
   "publisher": "maximtrp",
   "displayName": "YouTrack for VS Code",
   "description": "Browse and manage issues in multiple YouTrack servers",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "icon": "resources/youtrack.png",
   "author": {
     "name": "Maksim Terpilovskii",
@@ -232,7 +232,7 @@
         "command": "youtrack.sortIssuesByResolvedDate",
         "title": "Resolved Date",
         "category": "YouTrack",
-        "enablement": "config.youtrack.sortIssuesBy != Resolved Date"
+        "enablement": "config.youtrack.sortIssuesBy != 'Resolved Date'"
       },
       {
         "command": "youtrack.showIssuesAssignedToMe",
@@ -253,7 +253,7 @@
         "enablement": "config.youtrack.showIssuesAssignedTo != Unassigned"
       },
       {
-        "command": "youtrack.editIssueSummary",
+        "command": "youtrack.updateIssueSummary",
         "title": "Issue Summary",
         "category": "YouTrack"
       },
@@ -270,6 +270,11 @@
       {
         "command": "youtrack.updateIssueType",
         "title": "Issue Type",
+        "category": "YouTrack"
+      },
+      {
+        "command": "youtrack.updateIssueAssignee",
+        "title": "Issue Assignee",
         "category": "YouTrack"
       },
       {
@@ -455,6 +460,10 @@
       ],
       "youtrack.updateIssue": [
         {
+          "command": "youtrack.updateIssueSummary",
+          "group": "Update"
+        },
+        {
           "command": "youtrack.updateIssuePriority",
           "group": "Update"
         },
@@ -465,30 +474,24 @@
         {
           "command": "youtrack.updateIssueState",
           "group": "Update"
-        }
-      ],
-      "youtrack.editIssue": [
+        },
         {
-          "command": "youtrack.editIssueSummary",
-          "group": "Edit"
+          "command": "youtrack.updateIssueAssignee",
+          "group": "Update"
         }
       ],
       "youtrack.issue": [
         {
-          "submenu": "youtrack.editIssue",
+          "command": "youtrack.gotoIssuePage",
           "group": "issue@1"
         },
         {
-          "command": "youtrack.gotoIssuePage",
+          "submenu": "youtrack.updateIssue",
           "group": "issue@2"
         },
         {
-          "submenu": "youtrack.updateIssue",
-          "group": "issue@3"
-        },
-        {
           "command": "youtrack.deleteIssue",
-          "group": "issue@4"
+          "group": "issue@3"
         }
       ],
       "view/item/context": [
@@ -503,24 +506,19 @@
           "group": "inline"
         },
         {
-          "submenu": "youtrack.editIssue",
+          "command": "youtrack.gotoIssuePage",
           "when": "viewItem == issue",
           "group": "issue@1"
         },
         {
-          "command": "youtrack.gotoIssuePage",
+          "submenu": "youtrack.updateIssue",
           "when": "viewItem == issue",
           "group": "issue@2"
         },
         {
-          "submenu": "youtrack.updateIssue",
-          "when": "viewItem == issue",
-          "group": "issue@3"
-        },
-        {
           "command": "youtrack.deleteIssue",
           "when": "viewItem == issue",
-          "group": "issue@4"
+          "group": "issue@3"
         },
         {
           "submenu": "youtrack.servers",

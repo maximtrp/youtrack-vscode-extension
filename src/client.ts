@@ -20,12 +20,11 @@ export class YoutrackClient {
       result = (await this.client.get(url, { params })).data;
       // console.log(this.client.getUri({ baseURL: url, params }));
       // console.log(result);
-      return result;
     } catch (error: any) {
       // console.log(error.toJSON());
       // console.log(error.request as ClientRequest);
-      return result;
     }
+    return result;
   }
 
   async _post(url: string, data?: object, params?: object): Promise<any | null> {
@@ -118,10 +117,6 @@ export class YoutrackClient {
     });
   }
 
-  async deleteIssue(issueId: string): Promise<null> {
-    return await this._delete(`/api/issues/${issueId}`);
-  }
-
   async updateIssueSingleEnum(issueId: string, name: string, value: string): Promise<Issue[] | null> {
     return await this._post(`/api/issues/${issueId}`, {
       customFields: [
@@ -137,19 +132,30 @@ export class YoutrackClient {
     });
   }
 
-  async getStates(params?: object): Promise<State[] | null> {
-    return await this._get("/api/admin/customFieldSettings/bundles/state", {
-      fields: ["name", "id", "values(name,id,ordinal,isResolved)", "isUpdateable"].join(","),
-      ...params,
+  async updateIssueAssignee(issueId: string, userId?: string): Promise<Issue[] | null> {
+    if (!userId && !this.self) {
+      throw Error("Assignee was not updated due to missing user data");
+    }
+    return await this._post(`/api/issues/${issueId}`, {
+      customFields: [
+        {
+          value: {
+            id: userId || this.self!.id,
+            $type: "User",
+          },
+          name: "Assignee",
+          $type: "SingleUserIssueCustomField",
+        },
+      ],
     });
-  }
-
-  async getMe(): Promise<void> {
-    this.self = await this._get("/api/users/me", { fields: ["id", "login", "fullName", "banned"].join(",") });
   }
 
   async updateIssue(issueId: string, data?: object, params?: object): Promise<Issue> {
     return await this._post(`/api/issues/${issueId}`, data, params);
+  }
+
+  async deleteIssue(issueId: string): Promise<null> {
+    return await this._delete(`/api/issues/${issueId}`);
   }
 
   async addIssue(data?: object, params?: object): Promise<Issue> {
@@ -158,5 +164,20 @@ export class YoutrackClient {
 
   async addIssueToSprint(agileId: string, sprintId: string, issueId: string): Promise<Issue> {
     return await this._post(`/api/agiles/${agileId}/sprints/${sprintId}/issues`, { id: issueId, $type: "Issue" });
+  }
+
+  async getStates(params?: object): Promise<State[] | null> {
+    return await this._get("/api/admin/customFieldSettings/bundles/state", {
+      fields: ["name", "id", "values(name,id,ordinal,isResolved)", "isUpdateable"].join(","),
+      ...params,
+    });
+  }
+
+  async getUsers(): Promise<User[] | null> {
+    return await this._get("/api/users", { fields: ["id", "login", "fullName", "banned"].join(",") });
+  }
+
+  async getMe(): Promise<void> {
+    this.self = await this._get("/api/users/me", { fields: ["id", "login", "fullName", "banned"].join(",") });
   }
 }

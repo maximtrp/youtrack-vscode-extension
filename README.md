@@ -24,7 +24,7 @@ To use this extension, you should create a [personal access token](https://www.j
 
 ## Web Extension
 
-To use this extension in web environment ([VS Code for Web](https://vscode.dev/)), you must set CORS parameters using [this API](https://www.jetbrains.com/help/youtrack/devportal/resource-api-admin-globalSettings-restSettings.html).
+To use this extension in a web environment ([VS Code for Web](https://vscode.dev/)), you must set CORS parameters using [this API](https://www.jetbrains.com/help/youtrack/devportal/resource-api-admin-globalSettings-restSettings.html).
 
 For example, you can make a similar request using [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client):
 

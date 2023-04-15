@@ -225,7 +225,38 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
     }
   }
 
-  async editIssueSummary(item: IssueItem) {
+  async updateIssueAssignee(item: IssueItem) {
+    if (this.client) {
+      const users: User[] | null = await this.client.getUsers();
+      if (!users || users.length === 0) {
+        vscode.window.showInformationMessage(`No users found to assign this issue to`);
+        return;
+      }
+
+      const selectedUserInfo: string | undefined = await vscode.window.showQuickPick(
+        users.map((user) => `${user.login} (${user.fullName})`),
+        {
+          canPickMany: false,
+          ignoreFocusOut: true,
+          title: "Select a user to assign this issue to",
+        }
+      );
+      const selectedUserLogin = selectedUserInfo?.split(" ")[0];
+      const selectedUser = users.find((user) => user.login === selectedUserLogin);
+      if (!selectedUser) {
+        vscode.window.showInformationMessage("Issue assignee was not set");
+        return;
+      }
+
+      try {
+        await this.client.updateIssueAssignee(item.issue.id, selectedUser.id);
+      } catch (e) {
+        vscode.window.showErrorMessage(`Issue assignee was not updated due to this error: ${e}`);
+      }
+    }
+  }
+
+  async updateIssueSummary(item: IssueItem) {
     if (this.client) {
       let summary = await vscode.window.showInputBox({
         ignoreFocusOut: true,
@@ -240,27 +271,6 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
         await this.client.updateIssue(item.issue.id, { summary });
       } catch (e) {
         vscode.window.showWarningMessage(`Issue was not updated due to this error: ${e}`);
-      }
-    }
-  }
-
-  gotoIssuePage(item: IssueItem) {
-    if (this.client && this.agile) {
-      const issueUrl = `${this.client.url}/agiles/${this.agile.id}/current?issue=${item.issue.id}`;
-      vscode.env.openExternal(vscode.Uri.parse(issueUrl));
-    }
-  }
-
-  async deleteIssue(item: IssueItem) {
-    if (this.client) {
-      const confirm: boolean =
-        (await vscode.window.showInformationMessage("Do you want to delete this issue?", "Yes", "No")) === "Yes";
-      if (confirm) {
-        try {
-          await this.client.deleteIssue(item.issue.id);
-        } catch (e: any) {
-          vscode.window.showWarningMessage(`Issue was not deleted due to the error: ${e.message}`);
-        }
       }
     }
   }
@@ -300,6 +310,27 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
           await this.client.updateIssueSingleEnum(issue.id, name, value);
         } catch (e) {
           vscode.window.showWarningMessage(`Issue was not updated due to this error: ${e}`);
+        }
+      }
+    }
+  }
+
+  gotoIssuePage(item: IssueItem) {
+    if (this.client && this.agile) {
+      const issueUrl = `${this.client.url}/agiles/${this.agile.id}/current?issue=${item.issue.id}`;
+      vscode.env.openExternal(vscode.Uri.parse(issueUrl));
+    }
+  }
+
+  async deleteIssue(item: IssueItem) {
+    if (this.client) {
+      const confirm: boolean =
+        (await vscode.window.showInformationMessage("Do you want to delete this issue?", "Yes", "No")) === "Yes";
+      if (confirm) {
+        try {
+          await this.client.deleteIssue(item.issue.id);
+        } catch (e: any) {
+          vscode.window.showWarningMessage(`Issue was not deleted due to the error: ${e.message}`);
         }
       }
     }
