@@ -82,9 +82,9 @@ export class None extends vscode.TreeItem {
 }
 
 export class GroupingItem extends vscode.TreeItem {
-  sprint: Sprint;
+  sprint?: Sprint;
 
-  constructor(label: string, sprint: Sprint) {
+  constructor(label: string, sprint?: Sprint) {
     super(label, vscode.TreeItemCollapsibleState.Collapsed);
     this.iconPath = new vscode.ThemeIcon("folder");
     this.tooltip = `${label}`;

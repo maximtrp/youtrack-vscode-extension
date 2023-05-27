@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ServersProvider, ServerItem } from "./servers";
-import { AgilesProjectsProvider, AgileItem, ProjectItem } from "./agiles";
+import { AgilesProjectsProvider, AgileItem, ProjectItem, None as AgileNone } from "./agiles";
 import { SprintsIssuesProvider } from "./sprints";
 import { RecentIssuesProvider } from "./recent";
 import { IssueItem } from "./sprints.items";
@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
   const sprintIssuesProvider = new SprintsIssuesProvider(context);
   vscode.window.registerTreeDataProvider("youtrack-sprints", sprintIssuesProvider);
 
-  const recentIssuesProvider = new RecentIssuesProvider(context);
+  const recentIssuesProvider = new RecentIssuesProvider();
   vscode.window.registerTreeDataProvider("youtrack-recent-issues", recentIssuesProvider);
 
   const serversTree = vscode.window.createTreeView<ServerItem>("youtrack-servers", {
@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   agileProjectsTree.onDidChangeSelection(
-    async (elements: vscode.TreeViewSelectionChangeEvent<AgileItem | ProjectItem>) => {
+    async (elements: vscode.TreeViewSelectionChangeEvent<AgileItem | ProjectItem | AgileNone>) => {
       if (youtrackClient && elements.selection.length > 0) {
         let selectedItem = elements.selection[0];
 
@@ -51,9 +51,12 @@ export function activate(context: vscode.ExtensionContext) {
           sprintIssuesProvider.setSprints(selectedAgile.sprints);
           sprintIssuesProvider.setColumnSettings(selectedAgile.columnSettings);
           recentIssuesProvider.setProject((selectedAgile.projects || [])[0]);
-        } else if (selectedItem.contextValue === "project") {
+        } else if (selectedItem.contextValue?.startsWith("project")) {
           let selectedProject = selectedItem as ProjectItem;
+          sprintIssuesProvider.setAgile(selectedProject.parent.agile);
           sprintIssuesProvider.setProject(selectedProject.project);
+          sprintIssuesProvider.setSprints(selectedProject.parent.agile.sprints);
+          sprintIssuesProvider.setColumnSettings(selectedProject.parent.agile.columnSettings);
           recentIssuesProvider.setProject(selectedProject.project);
         }
       }

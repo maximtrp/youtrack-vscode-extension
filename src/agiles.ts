@@ -21,13 +21,21 @@ export class AgilesProjectsProvider implements vscode.TreeDataProvider<ProjectIt
     return element;
   }
 
+  getParent(element: ProjectItem | AgileItem | None): AgileItem | null {
+    if (element.contextValue?.startsWith("project")) {
+      return (element as ProjectItem).parent;
+    } else {
+      return null;
+    }
+  }
+
   async getChildren(agile?: AgileItem): Promise<AgileItem[] | None[] | ProjectItem[]> {
     if (this.client) {
       if (agile) {
         let projects: Project[] | undefined = agile.projects;
         if (projects) {
           projects = projects.sort((i, j) => (i.name && j.name && i.name < j.name ? -1 : 1));
-          return projects.map((project) => new ProjectItem(project));
+          return projects.map((project) => new ProjectItem(project, agile));
         } else {
           return [new None("No projects found")];
         }
@@ -48,7 +56,7 @@ export class AgilesProjectsProvider implements vscode.TreeDataProvider<ProjectIt
   }
 }
 
-class None extends vscode.TreeItem {
+export class None extends vscode.TreeItem {
   constructor(label: string, state: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None) {
     super(label, state);
     this.iconPath = new vscode.ThemeIcon(label.startsWith("Error") ? "warning" : "info");
@@ -56,11 +64,11 @@ class None extends vscode.TreeItem {
 }
 
 export class AgileItem extends vscode.TreeItem {
-  public name?: string;
+  public agile: Agile;
+  public name: string;
+  public columnSettings: ColumnSettings;
   public projects?: Project[];
   public sprints?: Sprint[] | null;
-  public agile?: Agile;
-  public columnSettings?: ColumnSettings;
 
   constructor(agile: Agile) {
     super(
@@ -82,14 +90,16 @@ export class AgileItem extends vscode.TreeItem {
 
 export class ProjectItem extends vscode.TreeItem {
   public project: Project;
+  public parent: AgileItem;
 
-  constructor(project: Project) {
+  constructor(project: Project, agileItem: AgileItem) {
     let label = project.name || "Unnamed Project";
     super(label, vscode.TreeItemCollapsibleState.None);
     this.tooltip = [project.name].join("\n");
     this.contextValue = "project" + (project.archived ? "_archived" : "_active");
     this.project = project;
     this.description = project.shortName ? `(${project.shortName})` : undefined;
+    this.parent = agileItem;
     this.iconPath = new vscode.ThemeIcon(
       "project",
       project.archived ? new vscode.ThemeColor("disabledForeground") : undefined

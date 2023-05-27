@@ -27,44 +27,57 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
     return element;
   }
 
-  async getStates(element: SprintItem) {
+  async getStates(element?: SprintItem) {
     if (this.columnSettings) {
       return this.columnSettings.columns
         .flatMap((col) => col.fieldValues)
-        .map((cfv) => new GroupingItem(cfv.name || cfv.id, element.sprint));
+        .map((cfv) => new GroupingItem(cfv.name || cfv.id, element?.sprint));
     } else {
       return [new None("No states found")];
     }
   }
 
-  async getPriorities(element: SprintItem) {
+  async getPriorities(element?: SprintItem) {
     // console.log(this.enumBundles);
     if (this.enumBundles) {
       const priorities = (this.enumBundles.find((bundle) => bundle.name === "Priorities") || {}).values;
       if (priorities) {
-        return priorities.map((priority) => new GroupingItem(priority.name || priority.id, element.sprint));
+        return priorities.map((priority) => new GroupingItem(priority.name || priority.id, element?.sprint));
       }
     }
     return [new None("No priorities found")];
   }
 
-  async getTypes(element: SprintItem) {
+  async getTypes(element?: SprintItem) {
     if (this.enumBundles) {
       const types = (this.enumBundles.find((bundle) => bundle.name === "Types") || {}).values;
       if (types) {
-        return types.map((type) => new GroupingItem(type.name || type.id, element.sprint));
+        return types.map((type) => new GroupingItem(type.name || type.id, element?.sprint));
       }
     }
     return [new None("No types found")];
   }
 
+  getGroups(groupby: string, sprint?: SprintItem | GroupingItem | None) {
+    if (groupby === "State") {
+      return this.getStates(sprint as SprintItem);
+    } else if (groupby === "Priority") {
+      return this.getPriorities(sprint as SprintItem);
+    } else if (groupby === "Type") {
+      return this.getTypes(sprint as SprintItem);
+    } else {
+      return this.getStates(sprint as SprintItem);
+    }
+  }
+
   async getChildren(
     element?: SprintItem | GroupingItem | None
   ): Promise<IssueItem[] | SprintItem[] | GroupingItem[] | None[]> {
+    const groupby: string = vscode.workspace.getConfiguration("youtrack").get("groupIssuesBy") || "None";
+
     if (this.client) {
       if (element) {
         // FILTER SETTINGS
-        const groupby: string = vscode.workspace.getConfiguration("youtrack").get("groupIssuesBy") || "None";
         const sortOrder: string = (
           vscode.workspace.getConfiguration("youtrack").get<string>("sortOrder") || "desc"
         ).toLowerCase();
@@ -74,18 +87,10 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
 
         // GROUPING LOGIC
         if (element.contextValue === "sprint" && groupby !== "None") {
-          if (groupby === "State") {
-            return this.getStates(element as SprintItem);
-          } else if (groupby === "Priority") {
-            return this.getPriorities(element as SprintItem);
-          } else if (groupby === "Type") {
-            return this.getTypes(element as SprintItem);
-          } else {
-            return this.getStates(element as SprintItem);
-          }
+          return this.getGroups(groupby, element);
         } else if ((element.contextValue !== "sprint" || groupby === "None") && this.project) {
           // ISSUES
-          const sprintName = (element as GroupingItem).sprint.name;
+          const sprintName = (element as GroupingItem).sprint?.name;
 
           let issues: Issue[] | null = await this.client.getIssues({
             query:
@@ -107,7 +112,9 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
 
         return [new None("No issues found")];
       } else {
-        if (this.sprints) {
+        if (this.agile?.sprintsSettings.disableSprints) {
+          return this.getGroups(groupby);
+        } else if (this.sprints) {
           return this.sprints.map((sprint) => new SprintItem(sprint));
         } else if (this.sprints === null) {
           return [new None("Error occurred while getting sprints")];

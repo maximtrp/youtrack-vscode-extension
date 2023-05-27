@@ -21,8 +21,9 @@ export class YoutrackClient {
       // console.log(this.client.getUri({ baseURL: url, params }));
       // console.log(result);
     } catch (error: any) {
+      // console.log(this.client.getUri({ baseURL: url, params }));
       // console.log(error.toJSON());
-      // console.log(error.request as ClientRequest);
+      // console.log(error.request);
     }
     return result;
   }
@@ -61,6 +62,7 @@ export class YoutrackClient {
         "projects(id,name,shortName,archived,customFields(name,value(name)))",
         "sprints(id,name,unresolvedIssuesCount,start,finish,archived)",
         "columnSettings(field(id,name),columns(presentation,isResolved,fieldValues(id,name)))",
+        "sprintsSettings(id,disableSprints)",
       ].join(","),
     });
   }

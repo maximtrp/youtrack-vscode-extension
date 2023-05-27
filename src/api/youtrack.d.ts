@@ -16,6 +16,11 @@ interface ColumnSettings {
   field?: CustomField;
 }
 
+interface SprintsSettings {
+  id: string;
+  disableSprints: boolean;
+}
+
 interface Agile {
   id: string;
   name: string;
@@ -23,6 +28,7 @@ interface Agile {
   projects?: Project[];
   sprints?: Sprint[];
   columnSettings: ColumnSettings;
+  sprintsSettings: SprintsSettings;
 }
 
 interface AgileColumn {

@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.4.0 (2023-05-27)
+
+- Added support for kanban boards to a tree with grouped issues.
+- Fixed an error in refreshing issues trees on selecting a project.
+
 ## 1.3.0 (2023-04-15)
 
 - Added new context menu option to update issue assignee.

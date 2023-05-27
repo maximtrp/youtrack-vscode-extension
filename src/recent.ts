@@ -5,10 +5,8 @@ import { IssueItem, None } from "./sprints.items";
 export class RecentIssuesProvider implements vscode.TreeDataProvider<IssueItem | None> {
   client?: YoutrackClient;
   project?: Project;
-  agile?: Agile;
-  sprints?: Sprint[] | null;
 
-  constructor(private context: vscode.ExtensionContext) {}
+  constructor() {}
 
   private _onDidChangeTreeData: vscode.EventEmitter<IssueItem | undefined | null | void> = new vscode.EventEmitter<
     IssueItem | undefined | null | void
