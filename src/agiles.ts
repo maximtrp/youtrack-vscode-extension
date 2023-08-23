@@ -52,7 +52,7 @@ export class AgilesProjectsProvider implements vscode.TreeDataProvider<ProjectIt
         }
       }
     }
-    return [new None("Select server to view repositories")];
+    return [new None("Select a server to view agiles and projects")];
   }
 }
 

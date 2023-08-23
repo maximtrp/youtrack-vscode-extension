@@ -123,7 +123,7 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
         }
       }
     }
-    return [new None("Select server to view repositories")];
+    return [new None("Select a project to view issues")];
   }
 
   async addIssue() {

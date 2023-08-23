@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.5.0 (2023-08-24)
+
+- Implemented autoselection of the first agile (on choosing a server).
+
 ## 1.4.0 (2023-05-27)
 
 - Added support for kanban boards to a tree with grouped issues.

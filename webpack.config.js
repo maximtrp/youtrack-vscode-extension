@@ -51,7 +51,7 @@ const config = {
 const webConfig = {
   mode: "none",
   target: "webworker",
-  entry: { "web-extension": "./src/extension.ts" },
+  entry: { webExtension: "./src/extension.ts" },
   output: {
     path: path.resolve(__dirname, "out"),
     filename: "[name].js",

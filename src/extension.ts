@@ -31,10 +31,15 @@ export function activate(context: vscode.ExtensionContext) {
 
   serversTree.onDidChangeSelection(async (serversView: vscode.TreeViewSelectionChangeEvent<ServerItem>) => {
     if (serversView.selection.length > 0) {
-      let baseUrl: string = serversView.selection[0].url;
-      let token: string = serversView.selection[0].token;
+      const baseUrl: string = serversView.selection[0].url;
+      const token: string = serversView.selection[0].token;
       youtrackClient = new YoutrackClient(baseUrl, token);
       agileProjectsProvider.refresh(youtrackClient);
+
+      const agiles = await agileProjectsProvider.getChildren();
+      if (agiles[0] instanceof AgileItem) {
+        agileProjectsTree.reveal(agiles[0], { select: true, focus: true });
+      }
     }
   });
 
