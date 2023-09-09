@@ -74,7 +74,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
     this.refresh();
   }
 
-  async editServer(server: ServerItem) {
+  async editServer(server: ServerItem): Promise<ServerInfo | undefined> {
     let servers: ServerInfo[] = [];
 
     const url = (
@@ -90,12 +90,11 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
       vscode.window.showWarningMessage(`You have not entered YouTrack server address`);
       return;
     } else {
-      // Getting existing servers
       servers = JSON.parse((await this.context.secrets.get("servers")) || "[]").filter(
         (existingServer: ServerInfo) => server.url !== existingServer.url
       );
-      // Checking if a server with entered URL exists
-      let serverExists = servers.find((server: ServerInfo) => server.url === url);
+
+      const serverExists = servers.find((server: ServerInfo) => server.url === url);
       if (serverExists) {
         vscode.window.showErrorMessage("Server with this URL already exists");
         return;
@@ -117,7 +116,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
         ignoreFocusOut: true,
       })) || server.token;
 
-    let serverNew: ServerInfo = {
+    const serverNew: ServerInfo = {
       id: this.servers.length,
       url: url,
       token: token,
@@ -128,6 +127,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
     await this.context.secrets.store("servers", JSON.stringify(servers));
     vscode.window.showInformationMessage(`You have successfully updated your YouTrack server`);
     this.refresh();
+    return serverNew;
   }
 
   async deleteServer(serverDeleted: vscode.TreeItem) {

@@ -172,9 +172,16 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   let commandAddServer = vscode.commands.registerCommand("youtrack.addServer", () => serversProvider.addServer());
-  let commandEditServer = vscode.commands.registerCommand("youtrack.editServer", (server) =>
-    serversProvider.editServer(server)
-  );
+  let commandEditServer = vscode.commands.registerCommand("youtrack.editServer", async (server) => {
+    const serverSelected = serversTree.selection[0];
+    const serverNew = await serversProvider.editServer(server);
+
+    if (serverNew && serverSelected.url === server.url) {
+      youtrackClient = new YoutrackClient(serverNew.url, serverNew.token);
+      agileProjectsProvider.refresh(youtrackClient);
+    }
+  });
+
   let commandDeleteServer = vscode.commands.registerCommand("youtrack.deleteServer", (server) => {
     vscode.window
       .showInformationMessage("Are you sure you want to delete this server?", "Yes", "No")

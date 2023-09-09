@@ -16,8 +16,7 @@ jobs:
     - run: npm install
     - name: Publish
       run: |
-        npm install -g @vscode/vsce ovsx yarn
-        yarn install
+        npm install -g @vscode/vsce ovsx
         npm run deploy
       env:
         VSCE_PAT: ${{ secrets.VSCE_PAT }}
