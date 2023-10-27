@@ -9,7 +9,11 @@ export class YoutrackClient {
 
   constructor(url: string, token: string) {
     this.url = url.replace(/\/+$/, "");
-    this.client = axios.create({ baseURL: this.url, headers: { Authorization: `Bearer ${token}` } });
+    this.client = axios.create({
+      timeout: 5000,
+      baseURL: this.url,
+      headers: { Authorization: `Bearer ${token}` },
+    });
     this.getMe();
     this.getEnumBundles();
   }
@@ -33,7 +37,12 @@ export class YoutrackClient {
     try {
       // console.log(url);
       // console.log(params);
-      result = (await this.client.post(url, data, { params, headers: { "Content-Type": "application/json" } })).data;
+      result = (
+        await this.client.post(url, data, {
+          params,
+          headers: { "Content-Type": "application/json" },
+        })
+      ).data;
       // console.log(result);
       return result;
     } catch (error: any) {
@@ -69,13 +78,20 @@ export class YoutrackClient {
 
   async getProjects(): Promise<Project[] | null> {
     return await this._get("/api/admin/projects", {
-      fields: ["id", "name", "description", "shortName", "createdBy(name,login)", "archived"].join(","),
+      fields: ["id", "name", "description", "shortName", "createdBy(name,login)", "archived"].join(
+        ","
+      ),
     });
   }
 
   async getEnumBundles(): Promise<void> {
     this.enumBundles = await this._get("/api/admin/customFieldSettings/bundles/enum", {
-      fields: ["name", "id", "values(name,id,description,bundle(name),ordinal)", "isUpdateable"].join(","),
+      fields: [
+        "name",
+        "id",
+        "values(name,id,description,bundle(name),ordinal)",
+        "isUpdateable",
+      ].join(","),
     });
   }
 
@@ -100,11 +116,19 @@ export class YoutrackClient {
     });
   }
 
-  async updateIssueSummary(projectId: string, issueId: string, summary: string): Promise<Issue[] | null> {
+  async updateIssueSummary(
+    projectId: string,
+    issueId: string,
+    summary: string
+  ): Promise<Issue[] | null> {
     return await this._post(`/api/admin/projects/${projectId}/issues/${issueId}`, { summary });
   }
 
-  async updateIssueState(projectId: string, issueId: string, state: string): Promise<Issue[] | null> {
+  async updateIssueState(
+    projectId: string,
+    issueId: string,
+    state: string
+  ): Promise<Issue[] | null> {
     return await this._post(`/api/admin/projects/${projectId}/issues/${issueId}`, {
       customFields: [
         {
@@ -119,7 +143,11 @@ export class YoutrackClient {
     });
   }
 
-  async updateIssueSingleEnum(issueId: string, name: string, value: string): Promise<Issue[] | null> {
+  async updateIssueSingleEnum(
+    issueId: string,
+    name: string,
+    value: string
+  ): Promise<Issue[] | null> {
     return await this._post(`/api/issues/${issueId}`, {
       customFields: [
         {
@@ -165,7 +193,10 @@ export class YoutrackClient {
   }
 
   async addIssueToSprint(agileId: string, sprintId: string, issueId: string): Promise<Issue> {
-    return await this._post(`/api/agiles/${agileId}/sprints/${sprintId}/issues`, { id: issueId, $type: "Issue" });
+    return await this._post(`/api/agiles/${agileId}/sprints/${sprintId}/issues`, {
+      id: issueId,
+      $type: "Issue",
+    });
   }
 
   async getStates(params?: object): Promise<State[] | null> {
@@ -176,10 +207,14 @@ export class YoutrackClient {
   }
 
   async getUsers(): Promise<User[] | null> {
-    return await this._get("/api/users", { fields: ["id", "login", "fullName", "banned"].join(",") });
+    return await this._get("/api/users", {
+      fields: ["id", "login", "fullName", "banned"].join(","),
+    });
   }
 
   async getMe(): Promise<void> {
-    this.self = await this._get("/api/users/me", { fields: ["id", "login", "fullName", "banned"].join(",") });
+    this.self = await this._get("/api/users/me", {
+      fields: ["id", "login", "fullName", "banned"].join(","),
+    });
   }
 }

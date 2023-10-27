@@ -3,7 +3,7 @@
   "publisher": "maximtrp",
   "displayName": "YouTrack for VS Code",
   "description": "Browse and manage issues in multiple YouTrack servers",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "icon": "resources/youtrack.png",
   "author": {
     "name": "Maksim Terpilovskii",
@@ -535,6 +535,132 @@
           "when": "view == youtrack-servers",
           "group": "servers@2"
         }
+      ],
+      "commandPalette": [
+        {
+          "command": "youtrack.addIssue",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.addIssue",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.groupIssuesByNone",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.groupIssuesByState",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.groupIssuesByPriority",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.groupIssuesByType",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.sortIssuesByDefault",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.sortIssuesByState",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.sortIssuesByPriority",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.sortIssuesByType",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.sortIssuesByVotes",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.sortIssuesByCreated",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.sortIssuesByUpdated",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.sortIssuesByResolvedDate",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.showIssuesAssignedToMe",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.showIssuesAssignedToAnyone",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.showUnassignedIssues",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.updateIssueSummary",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.updateIssueState",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.updateIssuePriority",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.updateIssueType",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.updateIssueAssignee",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.gotoIssuePage",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.deleteIssue",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.showIssueDescription",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.refreshAgiles",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.refreshRecentIssues",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.refreshSprints",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.editServer",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.deleteServer",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.createBranch",
+          "when": "false"
+        }
       ]
     }
   },
@@ -552,21 +678,21 @@
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.1",
+    "@types/mocha": "^10.0.3",
     "@types/node": "16.x",
     "@types/vscode": "^1.60.0",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
-    "@typescript-eslint/parser": "^5.53.0",
-    "ts-loader": "^9.4.2",
-    "eslint": "^8.41.0",
-    "glob": "^8.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "ts-loader": "^9.5.0",
+    "eslint": "^8.52.0",
+    "glob": "^10.3.10",
     "mocha": "^10.2.0",
-    "typescript": "^4.9.5",
-    "vscode-extension-tester": "^5.5.1",
-    "webpack": "^5.85.0",
-    "webpack-cli": "^5.1.1"
+    "typescript": "^5.2.2",
+    "vscode-extension-tester": "^5.10.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "axios": "^1.3.4"
+    "axios": "^1.6.0"
   }
 }

@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.5.2 - 2023-10-27
+
+- Removed unnecessary commands from palette.
+- Specified a lower timeout for API requests (5 sec).
+
 ## 1.5.1 - 2023-09-09
 
 - Implemented autorefresh of agiles/projects after server editing (if an edited server was selected).
