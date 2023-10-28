@@ -7,7 +7,7 @@
 
 This extension provides basic integration between [YouTrack](https://www.jetbrains.com/youtrack/) and VS Code. It allows you to browse your agiles and issues, quickly create or checkout git branches and update issue information. This is an unofficial extension and not affiliated with [JetBrains](#copyright-attributions).
 
-![Screenshot](resources/screenshot.png)
+<img src="resources/screenshot.png" height="768" alt="Screenshot" />
 
 ## Installation
 
