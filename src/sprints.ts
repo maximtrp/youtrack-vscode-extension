@@ -3,7 +3,9 @@ import { API } from "./api/git";
 import { YoutrackClient } from "./client";
 import { GroupingItem, IssueItem, SprintItem, None } from "./sprints.items";
 
-export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem | SprintItem | GroupingItem | None> {
+export class SprintsIssuesProvider
+  implements vscode.TreeDataProvider<IssueItem | SprintItem | GroupingItem | None>
+{
   client?: YoutrackClient;
   project?: Project;
   agile?: Agile;
@@ -13,10 +15,10 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
 
   constructor(private context: vscode.ExtensionContext) {}
 
-  private _onDidChangeTreeData: vscode.EventEmitter<IssueItem | undefined | null | void> = new vscode.EventEmitter<
-    IssueItem | undefined | null | void
-  >();
-  readonly onDidChangeTreeData: vscode.Event<IssueItem | undefined | null | void> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<IssueItem | undefined | null | void> =
+    new vscode.EventEmitter<IssueItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<IssueItem | undefined | null | void> =
+    this._onDidChangeTreeData.event;
 
   refresh(client?: YoutrackClient) {
     this.client = client;
@@ -40,9 +42,12 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
   async getPriorities(element?: SprintItem) {
     // console.log(this.enumBundles);
     if (this.enumBundles) {
-      const priorities = (this.enumBundles.find((bundle) => bundle.name === "Priorities") || {}).values;
+      const priorities = (this.enumBundles.find((bundle) => bundle.name === "Priorities") || {})
+        .values;
       if (priorities) {
-        return priorities.map((priority) => new GroupingItem(priority.name || priority.id, element?.sprint));
+        return priorities.map(
+          (priority) => new GroupingItem(priority.name || priority.id, element?.sprint)
+        );
       }
     }
     return [new None("No priorities found")];
@@ -73,29 +78,33 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
   async getChildren(
     element?: SprintItem | GroupingItem | None
   ): Promise<IssueItem[] | SprintItem[] | GroupingItem[] | None[]> {
-    const groupby: string = vscode.workspace.getConfiguration("youtrack").get("groupIssuesBy") || "None";
+    const groupby: string =
+      vscode.workspace.getConfiguration("youtrack").get("groupIssuesBy") || "None";
 
-    if (this.client) {
+    if (this.client && this.project) {
       if (element) {
         // FILTER SETTINGS
         const sortOrder: string = (
           vscode.workspace.getConfiguration("youtrack").get<string>("sortOrder") || "desc"
         ).toLowerCase();
-        const sortby: string = vscode.workspace.getConfiguration("youtrack").get("sortIssuesBy") || "Default";
+        const sortby: string =
+          vscode.workspace.getConfiguration("youtrack").get("sortIssuesBy") || "Default";
         const assignedto: string =
           vscode.workspace.getConfiguration("youtrack").get("showIssuesAssignedTo") || "Anyone";
 
         // GROUPING LOGIC
         if (element.contextValue === "sprint" && groupby !== "None") {
           return this.getGroups(groupby, element);
-        } else if ((element.contextValue !== "sprint" || groupby === "None") && this.project) {
+        } else if (element.contextValue !== "sprint" || groupby === "None") {
           // ISSUES
           const sprintName = (element as GroupingItem).sprint?.name;
 
           let issues: Issue[] | null = await this.client.getIssues({
             query:
               `project:{${this.project.name || this.project.id}} ` +
-              (groupby !== "None" && !!element.contextValue ? `${groupby}:{${element.label}} ` : "") +
+              (groupby !== "None" && !!element.contextValue
+                ? `${groupby}:{${element.label}} `
+                : "") +
               (sortby !== "Default" ? `sort by:{${sortby}} ${sortOrder} ` : "") +
               (assignedto !== "Anyone" ? `for:${assignedto} ` : "") +
               (sprintName ? `#{${sprintName}}` : ""),
@@ -128,7 +137,8 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
 
   async addIssue() {
     if (this.client && this.project) {
-      const summary = (await vscode.window.showInputBox({ ignoreFocusOut: true, title: "Issue summary" })) || "";
+      const summary =
+        (await vscode.window.showInputBox({ ignoreFocusOut: true, title: "Issue summary" })) || "";
       if (!summary) {
         vscode.window.showInformationMessage("Issue was not created due to the empty summary");
         return;
@@ -210,14 +220,18 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
 
       // Adding issue to a sprint
       if (this.agile && this.sprints) {
-        const sprints: string[] = this.sprints.map((sprint) => sprint.name || "").filter((name) => !!name);
+        const sprints: string[] = this.sprints
+          .map((sprint) => sprint.name || "")
+          .filter((name) => !!name);
         const selectedSprint: string | undefined = await vscode.window.showQuickPick(sprints, {
           canPickMany: false,
           ignoreFocusOut: true,
         });
 
         if (selectedSprint) {
-          const selectedSprintId = this.sprints.find((sprint) => sprint.name === selectedSprint)!.id;
+          const selectedSprintId = this.sprints.find(
+            (sprint) => sprint.name === selectedSprint
+          )!.id;
           try {
             await this.client.addIssueToSprint(this.agile.id, selectedSprintId, createdIssue.id);
           } catch (error: any) {
@@ -332,7 +346,11 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
   async deleteIssue(item: IssueItem) {
     if (this.client) {
       const confirm: boolean =
-        (await vscode.window.showInformationMessage("Do you want to delete this issue?", "Yes", "No")) === "Yes";
+        (await vscode.window.showInformationMessage(
+          "Do you want to delete this issue?",
+          "Yes",
+          "No"
+        )) === "Yes";
       if (confirm) {
         try {
           await this.client.deleteIssue(item.issue.id);
@@ -374,7 +392,9 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
   }
 
   setSprints(sprints?: Sprint[] | null) {
-    this.sprints = sprints?.sort((spr1, spr2) => (spr1.start && spr2.start && spr1.start < spr2.start ? 1 : -1));
+    this.sprints = sprints?.sort((spr1, spr2) =>
+      spr1.start && spr2.start && spr1.start < spr2.start ? 1 : -1
+    );
   }
   setColumnSettings(columnSettings?: ColumnSettings) {
     this.columnSettings = columnSettings;
@@ -388,5 +408,13 @@ export class SprintsIssuesProvider implements vscode.TreeDataProvider<IssueItem 
   }
   setAgile(agile?: Agile) {
     this.agile = agile;
+  }
+
+  reset(): SprintsIssuesProvider {
+    this.client = undefined;
+    this.project = undefined;
+    this.agile = undefined;
+    this.sprints = undefined;
+    return this;
   }
 }

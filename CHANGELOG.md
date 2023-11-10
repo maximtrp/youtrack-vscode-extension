@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.5.3 - 2023-11-10
+
+- Improved server operations (views are correctly reset on any change now).
+
 ## 1.5.2 - 2023-10-27
 
 - Removed unnecessary commands from palette.

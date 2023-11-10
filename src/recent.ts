@@ -8,10 +8,10 @@ export class RecentIssuesProvider implements vscode.TreeDataProvider<IssueItem |
 
   constructor() {}
 
-  private _onDidChangeTreeData: vscode.EventEmitter<IssueItem | undefined | null | void> = new vscode.EventEmitter<
-    IssueItem | undefined | null | void
-  >();
-  readonly onDidChangeTreeData: vscode.Event<IssueItem | undefined | null | void> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<IssueItem | undefined | null | void> =
+    new vscode.EventEmitter<IssueItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<IssueItem | undefined | null | void> =
+    this._onDidChangeTreeData.event;
 
   refresh(client?: YoutrackClient) {
     this.client = client;
@@ -28,8 +28,10 @@ export class RecentIssuesProvider implements vscode.TreeDataProvider<IssueItem |
       const sortOrder: string = (
         vscode.workspace.getConfiguration("youtrack").get<string>("sortOrder") || "desc"
       ).toLowerCase();
-      const sortby: string = vscode.workspace.getConfiguration("youtrack").get("sortIssuesBy") || "Default";
-      const assignedto: string = vscode.workspace.getConfiguration("youtrack").get("showIssuesAssignedTo") || "Anyone";
+      const sortby: string =
+        vscode.workspace.getConfiguration("youtrack").get("sortIssuesBy") || "Default";
+      const assignedto: string =
+        vscode.workspace.getConfiguration("youtrack").get("showIssuesAssignedTo") || "Anyone";
 
       // ISSUES
       let issues: Issue[] | null = await this.client.getIssues({
@@ -53,5 +55,11 @@ export class RecentIssuesProvider implements vscode.TreeDataProvider<IssueItem |
 
   setProject(project?: Project) {
     this.project = project;
+  }
+
+  reset(): RecentIssuesProvider {
+    this.client = undefined;
+    this.project = undefined;
+    return this;
   }
 }
