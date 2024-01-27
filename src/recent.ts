@@ -44,9 +44,9 @@ export class RecentIssuesProvider implements vscode.TreeDataProvider<IssueItem |
       if (issues && issues.length > 0) {
         return issues.map((issue) => new IssueItem(issue, this.client?.self));
       } else if (issues && issues.length === 0) {
-        return [new None("No issues found")];
+        return [new None("Issues not found")];
       } else {
-        return [new None("Error occurred while retrieving issues")];
+        return [new None("Issues retrieving failed")];
       }
     }
 

@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.5.4 - 2024-01-27
+
+- Improved error handling for agile and issue views.
+
 ## 1.5.3 - 2023-11-10
 
 - Improved server operations (views are correctly reset on any change now).

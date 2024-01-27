@@ -19,17 +19,12 @@ export class YoutrackClient {
   }
 
   async _get(url: string, params?: object): Promise<any | null> {
-    let result: any | null = null;
     try {
-      result = (await this.client.get(url, { params })).data;
-      // console.log(this.client.getUri({ baseURL: url, params }));
-      // console.log(result);
-    } catch (error: any) {
-      // console.log(this.client.getUri({ baseURL: url, params }));
-      // console.log(error.toJSON());
-      // console.log(error.request);
+      const request = await this.client.get(url, { params });
+      return request?.data;
+    } catch (error) {
+      throw error;
     }
-    return result;
   }
 
   async _post(url: string, data?: object, params?: object): Promise<any | null> {
@@ -62,8 +57,8 @@ export class YoutrackClient {
     }
   }
 
-  async getAgiles(): Promise<Agile[] | null> {
-    return await this._get("/api/agiles", {
+  getAgiles(): Promise<any | null> {
+    return this._get("/api/agiles", {
       fields: [
         "id",
         "name",
@@ -76,8 +71,8 @@ export class YoutrackClient {
     });
   }
 
-  async getProjects(): Promise<Project[] | null> {
-    return await this._get("/api/admin/projects", {
+  getProjects(): Promise<any | null> {
+    return this._get("/api/admin/projects", {
       fields: ["id", "name", "description", "shortName", "createdBy(name,login)", "archived"].join(
         ","
       ),
@@ -85,18 +80,22 @@ export class YoutrackClient {
   }
 
   async getEnumBundles(): Promise<void> {
-    this.enumBundles = await this._get("/api/admin/customFieldSettings/bundles/enum", {
-      fields: [
-        "name",
-        "id",
-        "values(name,id,description,bundle(name),ordinal)",
-        "isUpdateable",
-      ].join(","),
-    });
+    try {
+      this.enumBundles = await this._get("/api/admin/customFieldSettings/bundles/enum", {
+        fields: [
+          "name",
+          "id",
+          "values(name,id,description,bundle(name),ordinal)",
+          "isUpdateable",
+        ].join(","),
+      });
+    } catch (error: any) {
+      console.log("youtrack-vscode-extension request failed:", error.response);
+    }
   }
 
-  async getIssues(params?: object): Promise<Issue[] | null> {
-    return await this._get("/api/issues", {
+  getIssues(params?: object): Promise<any | null> {
+    return this._get("/api/issues", {
       fields: [
         "id",
         "numberInProject",
@@ -199,22 +198,26 @@ export class YoutrackClient {
     });
   }
 
-  async getStates(params?: object): Promise<State[] | null> {
-    return await this._get("/api/admin/customFieldSettings/bundles/state", {
+  getStates(params?: object): Promise<any | null> {
+    return this._get("/api/admin/customFieldSettings/bundles/state", {
       fields: ["name", "id", "values(name,id,ordinal,isResolved)", "isUpdateable"].join(","),
       ...params,
     });
   }
 
-  async getUsers(): Promise<User[] | null> {
-    return await this._get("/api/users", {
+  getUsers(): Promise<any | null> {
+    return this._get("/api/users", {
       fields: ["id", "login", "fullName", "banned"].join(","),
     });
   }
 
   async getMe(): Promise<void> {
-    this.self = await this._get("/api/users/me", {
-      fields: ["id", "login", "fullName", "banned"].join(","),
-    });
+    try {
+      this.self = await this._get("/api/users/me", {
+        fields: ["id", "login", "fullName", "banned"].join(","),
+      });
+    } catch (error: any) {
+      console.log("youtrack-vscode-extension request failed:", error.response);
+    }
   }
 }

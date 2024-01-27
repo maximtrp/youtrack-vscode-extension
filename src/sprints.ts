@@ -96,39 +96,47 @@ export class SprintsIssuesProvider
         if (element.contextValue === "sprint" && groupby !== "None") {
           return this.getGroups(groupby, element);
         } else if (element.contextValue !== "sprint" || groupby === "None") {
-          // ISSUES
           const sprintName = (element as GroupingItem).sprint?.name;
 
-          let issues: Issue[] | null = await this.client.getIssues({
-            query:
-              `project:{${this.project.name || this.project.id}} ` +
-              (groupby !== "None" && !!element.contextValue
-                ? `${groupby}:{${element.label}} `
-                : "") +
-              (sortby !== "Default" ? `sort by:{${sortby}} ${sortOrder} ` : "") +
-              (assignedto !== "Anyone" ? `for:${assignedto} ` : "") +
-              (sprintName ? `#{${sprintName}}` : ""),
-          });
+          // ISSUES
+          try {
+            const issues: Issue[] | null = await this.client.getIssues({
+              query:
+                `project:{${this.project.name || this.project.id}} ` +
+                (groupby !== "None" && !!element.contextValue
+                  ? `${groupby}:{${element.label}} `
+                  : "") +
+                (sortby !== "Default" ? `sort by:{${sortby}} ${sortOrder} ` : "") +
+                (assignedto !== "Anyone" ? `for:${assignedto} ` : "") +
+                (sprintName ? `#{${sprintName}}` : ""),
+            });
 
-          if (issues && issues.length > 0) {
-            return issues.map((issue) => new IssueItem(issue, this.client?.self));
-          } else if (issues && issues.length === 0) {
-            return [new None("No issues found")];
-          } else {
-            return [new None("Error occurred while retrieving issues")];
+            if (issues && issues.length > 0) {
+              return issues.map((issue) => new IssueItem(issue, this.client?.self));
+            } else {
+              return [new None("Issues not found")];
+            }
+          } catch (error: any) {
+            vscode.window.showErrorMessage(
+              `Failed to retrieve sprint issues. ` +
+                (error.response
+                  ? `Error ${error.response.status}: ${error.response.data.error}. ${error.response.data.error_description}`
+                  : `Error: ${error.message}`)
+            );
+            return [new None("Sprint issues retrieving failed")];
           }
         }
 
-        return [new None("No issues found")];
+        return [new None("Issues not found")];
       } else {
         if (this.agile?.sprintsSettings.disableSprints) {
           return this.getGroups(groupby);
         } else if (this.sprints) {
           return this.sprints.map((sprint) => new SprintItem(sprint));
         } else if (this.sprints === null) {
-          return [new None("Error occurred while getting sprints")];
+          return [new None("Sprints retrieving failed")];
         } else {
-          return [new None("No sprints found")];
+          return [new None("Issues not found")];
         }
       }
     }

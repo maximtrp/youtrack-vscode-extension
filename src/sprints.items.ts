@@ -14,36 +14,18 @@ export class IssueItem extends vscode.TreeItem {
   code: string;
   assignee?: User;
 
-  getIcon?(issue: Issue, self?: User) {
-    let assignee = (issue.customFields?.find((field) => field.name === "Assignee") || {}).value;
-    if (issue.resolved) {
-      return new vscode.ThemeIcon("pass", new vscode.ThemeColor("charts.green"));
-    } else if (assignee && self && assignee.login === self.login) {
-      return new vscode.ThemeIcon("warning");
-    } else {
-      return new vscode.ThemeIcon("note");
-    }
-  }
-
-  prepareDescription(item: IssueItem): string {
-    let description = `<h1>${item.label}</h1>`;
-    let reporter = item.issue.reporter ? `Created by ${item.issue.reporter.fullName}` : "";
-    let reportDate = item.issue.created ? ` on ${fmt.format(item.issue.created)}` : "";
-    description += `<p>${reporter}${reportDate}</p>`;
-    let updater = item.issue.updater ? `Updated by ${item.issue.updater.fullName}` : "";
-    let upDate = item.issue.updated ? ` on ${fmt.format(item.issue.updated)}` : "";
-    description += `<p>${updater}${upDate}</p>`;
-    description += `<h2>Description</h2>${item.issue.wikifiedDescription || "No description available"}`;
-    return description;
-  }
-
   constructor(issue: Issue, self?: User) {
     let shortName = issue.project?.shortName || "Issue";
     let summary = issue.summary || "No summary provided";
     let label = `${shortName}-${issue.numberInProject}: ${summary}`;
-    let assignee: User = (issue.customFields?.find((field) => field.name === "Assignee") || {}).value;
-    let state: IssueCustomField = (issue.customFields?.find((field) => field.name === "State") || {}).value;
-    let priority: IssueCustomField = (issue.customFields?.find((field) => field.name === "Priority") || {}).value;
+    let assignee: User = (issue.customFields?.find((field) => field.name === "Assignee") || {})
+      .value;
+    let state: IssueCustomField = (
+      issue.customFields?.find((field) => field.name === "State") || {}
+    ).value;
+    let priority: IssueCustomField = (
+      issue.customFields?.find((field) => field.name === "Priority") || {}
+    ).value;
     super(label, vscode.TreeItemCollapsibleState.None);
     this.tooltip = [
       label + "\n",
@@ -69,15 +51,43 @@ export class IssueItem extends vscode.TreeItem {
       arguments: [this.prepareDescription(this)],
     };
   }
+
+  getIcon?(issue: Issue, self?: User) {
+    let assignee = (issue.customFields?.find((field) => field.name === "Assignee") || {}).value;
+    if (issue.resolved) {
+      return new vscode.ThemeIcon("pass", new vscode.ThemeColor("charts.green"));
+    } else if (assignee && self && assignee.login === self.login) {
+      return new vscode.ThemeIcon("warning");
+    } else {
+      return new vscode.ThemeIcon("note");
+    }
+  }
+
+  prepareDescription(item: IssueItem): string {
+    let description = `<h1>${item.label}</h1>`;
+    let reporter = item.issue.reporter ? `Created by ${item.issue.reporter.fullName}` : "";
+    let reportDate = item.issue.created ? ` on ${fmt.format(item.issue.created)}` : "";
+    description += `<p>${reporter}${reportDate}</p>`;
+    let updater = item.issue.updater ? `Updated by ${item.issue.updater.fullName}` : "";
+    let upDate = item.issue.updated ? ` on ${fmt.format(item.issue.updated)}` : "";
+    description += `<p>${updater}${upDate}</p>`;
+    description += `<h2>Description</h2>${
+      item.issue.wikifiedDescription || "No description available"
+    }`;
+    return description;
+  }
 }
 
 export class None extends vscode.TreeItem {
   id: string = "";
   branch: string = "";
 
-  constructor(label: string, state: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None) {
+  constructor(
+    label: string,
+    state: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None
+  ) {
     super(label, state);
-    this.iconPath = new vscode.ThemeIcon(label.startsWith("Error") ? "warning" : "info");
+    this.iconPath = new vscode.ThemeIcon(/error|fail/i.test(label) ? "warning" : "info");
   }
 }
 

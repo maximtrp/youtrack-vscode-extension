@@ -1,16 +1,18 @@
 import * as vscode from "vscode";
 import { YoutrackClient } from "./client";
 
-export class AgilesProjectsProvider implements vscode.TreeDataProvider<ProjectItem | AgileItem | None> {
+export class AgilesProjectsProvider
+  implements vscode.TreeDataProvider<ProjectItem | AgileItem | None>
+{
   agiles: Agile[] | null = null;
   client?: YoutrackClient;
 
   constructor() {}
 
-  private _onDidChangeTreeData: vscode.EventEmitter<ProjectItem | undefined | null | void> = new vscode.EventEmitter<
-    ProjectItem | undefined | null | void
-  >();
-  readonly onDidChangeTreeData: vscode.Event<ProjectItem | undefined | null | void> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<ProjectItem | undefined | null | void> =
+    new vscode.EventEmitter<ProjectItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<ProjectItem | undefined | null | void> =
+    this._onDidChangeTreeData.event;
 
   refresh(client?: YoutrackClient) {
     this.client = client;
@@ -40,15 +42,22 @@ export class AgilesProjectsProvider implements vscode.TreeDataProvider<ProjectIt
           return [new None("No projects found")];
         }
       } else {
-        let agiles: Agile[] | null = await this.client.getAgiles();
-        if (agiles) {
-          if (agiles.length > 0) {
-            return agiles.filter((agile) => !!agile.projects).map((agile) => new AgileItem(agile));
-          } else if (agiles && agiles.length === 0) {
-            return [new None("No agiles found")];
+        try {
+          const agiles: Agile[] | null = await this.client.getAgiles();
+
+          if (agiles && agiles.length > 0) {
+            return agiles!.filter((agile) => !!agile.projects).map((agile) => new AgileItem(agile));
+          } else {
+            return [new None("Agiles not found")];
           }
-        } else {
-          return [new None("Error occurred while retrieving agiles")];
+        } catch (error: any) {
+          vscode.window.showErrorMessage(
+            `Failed to retrieve agiles, projects, and sprints. ` +
+              (error.response
+                ? `Error ${error.response.status}: ${error.response.data.error}. ${error.response.data.error_description}`
+                : `Error: ${error.message}`)
+          );
+          return [new None("Agiles retrieving failed")];
         }
       }
     }
@@ -57,9 +66,12 @@ export class AgilesProjectsProvider implements vscode.TreeDataProvider<ProjectIt
 }
 
 export class None extends vscode.TreeItem {
-  constructor(label: string, state: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None) {
+  constructor(
+    label: string,
+    state: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None
+  ) {
     super(label, state);
-    this.iconPath = new vscode.ThemeIcon(label.startsWith("Error") ? "warning" : "info");
+    this.iconPath = new vscode.ThemeIcon(/error|fail/i.test(label) ? "warning" : "info");
   }
 }
 
