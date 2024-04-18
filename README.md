@@ -41,6 +41,12 @@ Content-Type: application/json
 }
 ```
 
+## Donate
+
+If you find this extension useful, please consider donating any amount of money. This will help me spend more time on supporting open-source software.
+
+<a href="https://www.buymeacoffee.com/maximtrp" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 ## Copyright attributions
 
 Copyright © 2023 JetBrains s.r.o. [YouTrack](https://www.jetbrains.com/youtrack/) and the YouTrack logo are registered trademarks of [JetBrains s.r.o](https://www.jetbrains.com).
