@@ -12,9 +12,12 @@ jobs:
     - name: Install Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
-    - run: npm install
-    - name: Publish
+        node-version: 18.x
+    - name: Install packages
+      run: |
+        npm install
+        npm audit fix
+    - name: Build and deploy package
       run: |
         npm install -g @vscode/vsce ovsx
         npm run deploy

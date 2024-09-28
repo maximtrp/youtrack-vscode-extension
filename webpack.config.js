@@ -1,7 +1,10 @@
 //@ts-check
-
 "use strict";
 
+//@ts-check
+/** @typedef {import('webpack').Configuration} WebpackConfig **/
+
+const webpack = require("webpack");
 const path = require("path");
 
 /**@type {import('webpack').Configuration}*/
@@ -62,18 +65,18 @@ const webConfig = {
     vscode: "commonjs vscode",
   },
   resolve: {
-    mainFields: ["browser"],
+    mainFields: ["browser", "module", "main"],
     extensions: [".ts", ".js", ".mjs"],
     alias: {
       // provides alternate implementation for node module and source files
     },
     fallback: {
-      form_data: require.resolve("form-data"),
+      https: require.resolve("https-browserify"),
+      http: require.resolve("stream-http"),
       url: require.resolve("url"),
-      util: require.resolve("util"),
-      http: require.resolve("http"),
-      https: require.resolve("https"),
-      zlib: require.resolve("zlib"),
+      buffer: require.resolve("buffer"),
+      Buffer: require.resolve("buffer"),
+      'process/browser': require.resolve('process/browser')
     },
   },
   module: {
@@ -93,7 +96,16 @@ const webConfig = {
         ],
       },
     ],
+
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process/browser', // provide a shim for the global `process` variable
+    }),
+  ],
+  optimization: {
+    concatenateModules: false
+  }
 };
 
 module.exports = [config, webConfig];

@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import axios, { AxiosInstance } from "axios";
+import * as https from "https";
+
+axios.defaults.httpsAgent;
 
 export class YoutrackClient {
   private client: AxiosInstance;
@@ -13,6 +16,9 @@ export class YoutrackClient {
       timeout: 5000,
       baseURL: this.url,
       headers: { Authorization: `Bearer ${token}` },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
     });
     this.getMe();
     this.getEnumBundles();
@@ -27,7 +33,11 @@ export class YoutrackClient {
     }
   }
 
-  async _post(url: string, data?: object, params?: object): Promise<any | null> {
+  async _post(
+    url: string,
+    data?: object,
+    params?: object,
+  ): Promise<any | null> {
     let result: any | null = null;
     try {
       // console.log(url);
@@ -73,22 +83,30 @@ export class YoutrackClient {
 
   getProjects(): Promise<any | null> {
     return this._get("/api/admin/projects", {
-      fields: ["id", "name", "description", "shortName", "createdBy(name,login)", "archived"].join(
-        ","
-      ),
+      fields: [
+        "id",
+        "name",
+        "description",
+        "shortName",
+        "createdBy(name,login)",
+        "archived",
+      ].join(","),
     });
   }
 
   async getEnumBundles(): Promise<void> {
     try {
-      this.enumBundles = await this._get("/api/admin/customFieldSettings/bundles/enum", {
-        fields: [
-          "name",
-          "id",
-          "values(name,id,description,bundle(name),ordinal)",
-          "isUpdateable",
-        ].join(","),
-      });
+      this.enumBundles = await this._get(
+        "/api/admin/customFieldSettings/bundles/enum",
+        {
+          fields: [
+            "name",
+            "id",
+            "values(name,id,description,bundle(name),ordinal)",
+            "isUpdateable",
+          ].join(","),
+        },
+      );
     } catch (error: any) {
       console.log("youtrack-vscode-extension request failed:", error.response);
     }
@@ -118,34 +136,40 @@ export class YoutrackClient {
   async updateIssueSummary(
     projectId: string,
     issueId: string,
-    summary: string
+    summary: string,
   ): Promise<Issue[] | null> {
-    return await this._post(`/api/admin/projects/${projectId}/issues/${issueId}`, { summary });
+    return await this._post(
+      `/api/admin/projects/${projectId}/issues/${issueId}`,
+      { summary },
+    );
   }
 
   async updateIssueState(
     projectId: string,
     issueId: string,
-    state: string
+    state: string,
   ): Promise<Issue[] | null> {
-    return await this._post(`/api/admin/projects/${projectId}/issues/${issueId}`, {
-      customFields: [
-        {
-          value: {
-            name: state,
-            $type: "StateBundleElement",
+    return await this._post(
+      `/api/admin/projects/${projectId}/issues/${issueId}`,
+      {
+        customFields: [
+          {
+            value: {
+              name: state,
+              $type: "StateBundleElement",
+            },
+            name: "State",
+            $type: "StateIssueCustomField",
           },
-          name: "State",
-          $type: "StateIssueCustomField",
-        },
-      ],
-    });
+        ],
+      },
+    );
   }
 
   async updateIssueSingleEnum(
     issueId: string,
     name: string,
-    value: string
+    value: string,
   ): Promise<Issue[] | null> {
     return await this._post(`/api/issues/${issueId}`, {
       customFields: [
@@ -161,7 +185,10 @@ export class YoutrackClient {
     });
   }
 
-  async updateIssueAssignee(issueId: string, userId?: string): Promise<Issue[] | null> {
+  async updateIssueAssignee(
+    issueId: string,
+    userId?: string,
+  ): Promise<Issue[] | null> {
     if (!userId && !this.self) {
       throw Error("Assignee was not updated due to missing user data");
     }
@@ -179,7 +206,11 @@ export class YoutrackClient {
     });
   }
 
-  async updateIssue(issueId: string, data?: object, params?: object): Promise<Issue> {
+  async updateIssue(
+    issueId: string,
+    data?: object,
+    params?: object,
+  ): Promise<Issue> {
     return await this._post(`/api/issues/${issueId}`, data, params);
   }
 
@@ -191,16 +222,28 @@ export class YoutrackClient {
     return await this._post(`/api/issues`, data, params);
   }
 
-  async addIssueToSprint(agileId: string, sprintId: string, issueId: string): Promise<Issue> {
-    return await this._post(`/api/agiles/${agileId}/sprints/${sprintId}/issues`, {
-      id: issueId,
-      $type: "Issue",
-    });
+  async addIssueToSprint(
+    agileId: string,
+    sprintId: string,
+    issueId: string,
+  ): Promise<Issue> {
+    return await this._post(
+      `/api/agiles/${agileId}/sprints/${sprintId}/issues`,
+      {
+        id: issueId,
+        $type: "Issue",
+      },
+    );
   }
 
   getStates(params?: object): Promise<any | null> {
     return this._get("/api/admin/customFieldSettings/bundles/state", {
-      fields: ["name", "id", "values(name,id,ordinal,isResolved)", "isUpdateable"].join(","),
+      fields: [
+        "name",
+        "id",
+        "values(name,id,ordinal,isResolved)",
+        "isUpdateable",
+      ].join(","),
       ...params,
     });
   }
