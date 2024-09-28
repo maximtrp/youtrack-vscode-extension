@@ -2,12 +2,11 @@ import * as vscode from "vscode";
 import { YoutrackClient } from "./client";
 
 export class AgilesProjectsProvider
-  implements vscode.TreeDataProvider<ProjectItem | AgileItem | None>
-{
+  implements vscode.TreeDataProvider<ProjectItem | AgileItem | None> {
   agiles: Agile[] | null = null;
   client?: YoutrackClient;
 
-  constructor() {}
+  constructor() { }
 
   private _onDidChangeTreeData: vscode.EventEmitter<ProjectItem | undefined | null | void> =
     new vscode.EventEmitter<ProjectItem | undefined | null | void>();
@@ -53,9 +52,9 @@ export class AgilesProjectsProvider
         } catch (error: any) {
           vscode.window.showErrorMessage(
             `Failed to retrieve agiles, projects, and sprints. ` +
-              (error.response
-                ? `Error ${error.response.status}: ${error.response.data.error}. ${error.response.data.error_description}`
-                : `Error: ${error.message}`)
+            (error.response
+              ? `Error ${error.response.status}: ${error.response.data.error}. ${error.response.data.error_description}`
+              : `Error: ${error.message}`)
           );
           return [new None("Agiles retrieving failed")];
         }

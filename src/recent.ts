@@ -6,7 +6,7 @@ export class RecentIssuesProvider implements vscode.TreeDataProvider<IssueItem |
   client?: YoutrackClient;
   project?: Project;
 
-  constructor() {}
+  constructor() { }
 
   private _onDidChangeTreeData: vscode.EventEmitter<IssueItem | undefined | null | void> =
     new vscode.EventEmitter<IssueItem | undefined | null | void>();

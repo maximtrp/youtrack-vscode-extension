@@ -71,9 +71,8 @@ export class IssueItem extends vscode.TreeItem {
     let updater = item.issue.updater ? `Updated by ${item.issue.updater.fullName}` : "";
     let upDate = item.issue.updated ? ` on ${fmt.format(item.issue.updated)}` : "";
     description += `<p>${updater}${upDate}</p>`;
-    description += `<h2>Description</h2>${
-      item.issue.wikifiedDescription || "No description available"
-    }`;
+    description += `<h2>Description</h2>${item.issue.wikifiedDescription || "No description available"
+      }`;
     return description;
   }
 }

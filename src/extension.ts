@@ -354,7 +354,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 async function setConfiguration(field: string, value: string) {
   await vscode.workspace.getConfiguration().update(field, value, vscode.ConfigurationTarget.Global);

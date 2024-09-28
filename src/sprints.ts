@@ -2,10 +2,10 @@ import * as vscode from "vscode";
 import { API } from "./api/git";
 import { YoutrackClient } from "./client";
 import { GroupingItem, IssueItem, SprintItem, None } from "./sprints.items";
+import { AxiosError } from "axios";
 
 export class SprintsIssuesProvider
-  implements vscode.TreeDataProvider<IssueItem | SprintItem | GroupingItem | None>
-{
+  implements vscode.TreeDataProvider<IssueItem | SprintItem | GroupingItem | None> {
   client?: YoutrackClient;
   project?: Project;
   agile?: Agile;
@@ -13,7 +13,7 @@ export class SprintsIssuesProvider
   columnSettings?: ColumnSettings;
   enumBundles?: EnumBundle[];
 
-  constructor(private context: vscode.ExtensionContext) {}
+  constructor() { }
 
   private _onDidChangeTreeData: vscode.EventEmitter<IssueItem | undefined | null | void> =
     new vscode.EventEmitter<IssueItem | undefined | null | void>();
@@ -116,12 +116,13 @@ export class SprintsIssuesProvider
             } else {
               return [new None("Issues not found")];
             }
-          } catch (error: any) {
+          } catch (e) {
+            const error = e as AxiosError;
             vscode.window.showErrorMessage(
               `Failed to retrieve sprint issues. ` +
-                (error.response
-                  ? `Error ${error.response.status}: ${error.response.data.error}. ${error.response.data.error_description}`
-                  : `Error: ${error.message}`)
+              (error.response
+                ? `Error ${error.response.status}: ${error.response.data?.error}. ${error.response.data?.error_description}`
+                : `Error: ${error.message}`)
             );
             return [new None("Sprint issues retrieving failed")];
           }
@@ -157,7 +158,7 @@ export class SprintsIssuesProvider
         title: "Issue description (optional)",
       });
 
-      let issue: NewIssue = {
+      const issue: NewIssue = {
         summary,
         description,
         project: {
@@ -221,8 +222,8 @@ export class SprintsIssuesProvider
       try {
         // Creating an issue
         createdIssue = await this.client.addIssue(issue, { fields: "id" });
-      } catch (error: any) {
-        vscode.window.showErrorMessage(`Issue was not created due to the error: ${error.message}`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`Issue was not created due to the error: ${(error as Error).message}`);
         return;
       }
 
@@ -242,9 +243,9 @@ export class SprintsIssuesProvider
           )!.id;
           try {
             await this.client.addIssueToSprint(this.agile.id, selectedSprintId, createdIssue.id);
-          } catch (error: any) {
+          } catch (error) {
             vscode.window.showErrorMessage(
-              `Issue was not added to ${selectedSprint} due to this error: ${error.message}`
+              `Issue was not added to ${selectedSprint} due to this error: ${(error as Error).message}`
             );
           }
         }
@@ -287,7 +288,7 @@ export class SprintsIssuesProvider
 
   async updateIssueSummary(item: IssueItem) {
     if (this.client) {
-      let summary = await vscode.window.showInputBox({
+      const summary = await vscode.window.showInputBox({
         ignoreFocusOut: true,
         title: "Enter issue summary",
         value: item.issue.summary,
@@ -362,8 +363,8 @@ export class SprintsIssuesProvider
       if (confirm) {
         try {
           await this.client.deleteIssue(item.issue.id);
-        } catch (e: any) {
-          vscode.window.showWarningMessage(`Issue was not deleted due to the error: ${e.message}`);
+        } catch (error) {
+          vscode.window.showWarningMessage(`Issue was not deleted due to the error: ${(error as Error).message}`);
         }
       }
     }
@@ -381,8 +382,9 @@ export class SprintsIssuesProvider
           try {
             await repo.checkout(item.code.toLowerCase());
             // console.log(repo.state.HEAD?.name);
-          } catch (e) {
-            let branchName: string | undefined = await vscode.window.showInputBox({
+          } catch (error) {
+            console.error(error);
+            const branchName: string | undefined = await vscode.window.showInputBox({
               ignoreFocusOut: true,
               placeHolder: "Branch name",
               value: item.code.toLowerCase(),
@@ -396,7 +398,9 @@ export class SprintsIssuesProvider
           vscode.window.showInformationMessage("No git repositories found");
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      vscode.window.showInformationMessage(`Error occurred while creating a git branch: ${(error as Error).message}`);
+    }
   }
 
   setSprints(sprints?: Sprint[] | null) {

@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance } from "axios";
 import * as https from "https";
-
-axios.defaults.httpsAgent;
 
 export class YoutrackClient {
   private client: AxiosInstance;
@@ -24,50 +21,28 @@ export class YoutrackClient {
     this.getEnumBundles();
   }
 
-  async _get(url: string, params?: object): Promise<any | null> {
-    try {
-      const request = await this.client.get(url, { params });
-      return request?.data;
-    } catch (error) {
-      throw error;
-    }
+  async _get(url: string, params?: object) {
+    return (await this.client.get(url, { params }))?.data;
   }
 
   async _post(
     url: string,
     data?: object,
     params?: object,
-  ): Promise<any | null> {
-    let result: any | null = null;
-    try {
-      // console.log(url);
-      // console.log(params);
-      result = (
-        await this.client.post(url, data, {
-          params,
-          headers: { "Content-Type": "application/json" },
-        })
-      ).data;
-      // console.log(result);
-      return result;
-    } catch (error: any) {
-      // console.log(error.toJSON());
-      // console.log(error.request as ClientRequest);
-      throw error;
-    }
+  ) {
+    return (
+      await this.client.post(url, data, {
+        params,
+        headers: { "Content-Type": "application/json" },
+      })
+    ).data;
   }
 
-  async _delete(url: string): Promise<any | null> {
-    let result: any;
-    try {
-      result = await this.client.delete(url);
-      return result;
-    } catch (error: any) {
-      throw error;
-    }
+  async _delete(url: string) {
+    return await this.client.delete(url);
   }
 
-  getAgiles(): Promise<any | null> {
+  getAgiles() {
     return this._get("/api/agiles", {
       fields: [
         "id",
@@ -81,7 +56,7 @@ export class YoutrackClient {
     });
   }
 
-  getProjects(): Promise<any | null> {
+  getProjects() {
     return this._get("/api/admin/projects", {
       fields: [
         "id",
@@ -107,12 +82,12 @@ export class YoutrackClient {
           ].join(","),
         },
       );
-    } catch (error: any) {
-      console.log("youtrack-vscode-extension request failed:", error.response);
+    } catch (error) {
+      console.log("youtrack-vscode-extension request failed:", (error as AxiosError).response);
     }
   }
 
-  getIssues(params?: object): Promise<any | null> {
+  getIssues(params?: object) {
     return this._get("/api/issues", {
       fields: [
         "id",
@@ -214,7 +189,7 @@ export class YoutrackClient {
     return await this._post(`/api/issues/${issueId}`, data, params);
   }
 
-  async deleteIssue(issueId: string): Promise<null> {
+  async deleteIssue(issueId: string) {
     return await this._delete(`/api/issues/${issueId}`);
   }
 
@@ -236,7 +211,7 @@ export class YoutrackClient {
     );
   }
 
-  getStates(params?: object): Promise<any | null> {
+  getStates(params?: object) {
     return this._get("/api/admin/customFieldSettings/bundles/state", {
       fields: [
         "name",
@@ -248,7 +223,7 @@ export class YoutrackClient {
     });
   }
 
-  getUsers(): Promise<any | null> {
+  getUsers() {
     return this._get("/api/users", {
       fields: ["id", "login", "fullName", "banned"].join(","),
     });
@@ -259,8 +234,8 @@ export class YoutrackClient {
       this.self = await this._get("/api/users/me", {
         fields: ["id", "login", "fullName", "banned"].join(","),
       });
-    } catch (error: any) {
-      console.log("youtrack-vscode-extension request failed:", error.response);
+    } catch (error) {
+      console.log("youtrack-vscode-extension request failed:", (error as AxiosError).response);
     }
   }
 }

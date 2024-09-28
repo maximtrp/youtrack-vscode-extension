@@ -10,7 +10,7 @@ interface ServerInfo {
 export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
   servers: ServerInfo[] = [];
 
-  constructor(private context: vscode.ExtensionContext) {}
+  constructor(private context: vscode.ExtensionContext) { }
 
   private _onDidChangeTreeData: vscode.EventEmitter<ServerItem | undefined | null | void> = new vscode.EventEmitter<
     ServerItem | undefined | null | void
