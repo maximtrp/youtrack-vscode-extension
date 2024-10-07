@@ -7,15 +7,13 @@ export class YoutrackClient {
   public self?: User;
   public enumBundles?: EnumBundle[];
 
-  constructor(url: string, token: string) {
+  constructor(url: string, token: string, isCertificateValidated: boolean) {
     this.url = url.replace(/\/+$/, "");
     this.client = axios.create({
       timeout: 5000,
       baseURL: this.url,
       headers: { Authorization: `Bearer ${token}` },
-      httpsAgent: new https.Agent({
-        rejectUnauthorized: false,
-      }),
+      httpsAgent: new https.Agent({ rejectUnauthorized: isCertificateValidated }),
     });
     this.getMe();
     this.getEnumBundles();

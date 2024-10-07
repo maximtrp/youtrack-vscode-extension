@@ -117,7 +117,7 @@ export class SprintsIssuesProvider
               return [new None("Issues not found")];
             }
           } catch (e) {
-            const error = e as AxiosError;
+            const error = e as (AxiosError & { response: { data: { error: string, error_description: string }}});
             vscode.window.showErrorMessage(
               `Failed to retrieve sprint issues. ` +
               (error.response
