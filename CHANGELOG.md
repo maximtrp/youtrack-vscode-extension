@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.6.0 - 2024-10-09
+
+- Implemented a configuration option for disabling certificate validation.
+
 ## 1.5.4 - 2024-01-27
 
 - Improved error handling for agile and issue views.
