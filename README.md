@@ -24,12 +24,11 @@ this extension, you should create a
 
 ## Features
 
--   Support for multiple YouTrack servers
--   Listing all agiles and projects
--   Grouping, sorting and filtering issues by many criteria (see screenshot
-    above)
--   Updating issue state, priority or type
--   Creating or checking out a branch for an issue
+- Support for multiple YouTrack servers
+- Listing all agiles and projects
+- Grouping, sorting and filtering issues by many criteria (see screenshot above)
+- Updating issue state, priority or type
+- Creating or checking out a branch for an issue
 
 ## Web Extension
 
