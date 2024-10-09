@@ -1,43 +1,41 @@
-import axios, { AxiosError, AxiosInstance } from "axios";
-import * as https from "https";
+import axios, { AxiosError, AxiosInstance } from "axios"
+import * as https from "https"
 
 export class YoutrackClient {
-  private client: AxiosInstance;
-  public url: string;
-  public self?: User;
-  public enumBundles?: EnumBundle[];
+  private client: AxiosInstance
+  public url: string
+  public self?: User
+  public enumBundles?: EnumBundle[]
 
   constructor(url: string, token: string, isCertificateValidated: boolean) {
-    this.url = url.replace(/\/+$/, "");
+    this.url = url.replace(/\/+$/, "")
     this.client = axios.create({
       timeout: 5000,
       baseURL: this.url,
       headers: { Authorization: `Bearer ${token}` },
-      httpsAgent: new https.Agent({ rejectUnauthorized: isCertificateValidated }),
-    });
-    this.getMe();
-    this.getEnumBundles();
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: isCertificateValidated,
+      }),
+    })
+    this.getMe()
+    this.getEnumBundles()
   }
 
   async _get(url: string, params?: object) {
-    return (await this.client.get(url, { params }))?.data;
+    return (await this.client.get(url, { params }))?.data
   }
 
-  async _post(
-    url: string,
-    data?: object,
-    params?: object,
-  ) {
+  async _post(url: string, data?: object, params?: object) {
     return (
       await this.client.post(url, data, {
         params,
         headers: { "Content-Type": "application/json" },
       })
-    ).data;
+    ).data
   }
 
   async _delete(url: string) {
-    return await this.client.delete(url);
+    return await this.client.delete(url)
   }
 
   getAgiles() {
@@ -51,7 +49,7 @@ export class YoutrackClient {
         "columnSettings(field(id,name),columns(presentation,isResolved,fieldValues(id,name)))",
         "sprintsSettings(id,disableSprints)",
       ].join(","),
-    });
+    })
   }
 
   getProjects() {
@@ -64,7 +62,7 @@ export class YoutrackClient {
         "createdBy(name,login)",
         "archived",
       ].join(","),
-    });
+    })
   }
 
   async getEnumBundles(): Promise<void> {
@@ -78,10 +76,13 @@ export class YoutrackClient {
             "values(name,id,description,bundle(name),ordinal)",
             "isUpdateable",
           ].join(","),
-        },
-      );
+        }
+      )
     } catch (error) {
-      console.log("youtrack-vscode-extension request failed:", (error as AxiosError).response);
+      console.log(
+        "youtrack-vscode-extension request failed:",
+        (error as AxiosError).response
+      )
     }
   }
 
@@ -103,24 +104,24 @@ export class YoutrackClient {
       ].join(","),
       customFields: ["assignee", "state"],
       ...params,
-    });
+    })
   }
 
   async updateIssueSummary(
     projectId: string,
     issueId: string,
-    summary: string,
+    summary: string
   ): Promise<Issue[] | null> {
     return await this._post(
       `/api/admin/projects/${projectId}/issues/${issueId}`,
-      { summary },
-    );
+      { summary }
+    )
   }
 
   async updateIssueState(
     projectId: string,
     issueId: string,
-    state: string,
+    state: string
   ): Promise<Issue[] | null> {
     return await this._post(
       `/api/admin/projects/${projectId}/issues/${issueId}`,
@@ -135,14 +136,14 @@ export class YoutrackClient {
             $type: "StateIssueCustomField",
           },
         ],
-      },
-    );
+      }
+    )
   }
 
   async updateIssueSingleEnum(
     issueId: string,
     name: string,
-    value: string,
+    value: string
   ): Promise<Issue[] | null> {
     return await this._post(`/api/issues/${issueId}`, {
       customFields: [
@@ -155,15 +156,15 @@ export class YoutrackClient {
           $type: "SingleEnumIssueCustomField",
         },
       ],
-    });
+    })
   }
 
   async updateIssueAssignee(
     issueId: string,
-    userId?: string,
+    userId?: string
   ): Promise<Issue[] | null> {
     if (!userId && !this.self) {
-      throw Error("Assignee was not updated due to missing user data");
+      throw Error("Assignee was not updated due to missing user data")
     }
     return await this._post(`/api/issues/${issueId}`, {
       customFields: [
@@ -176,37 +177,37 @@ export class YoutrackClient {
           $type: "SingleUserIssueCustomField",
         },
       ],
-    });
+    })
   }
 
   async updateIssue(
     issueId: string,
     data?: object,
-    params?: object,
+    params?: object
   ): Promise<Issue> {
-    return await this._post(`/api/issues/${issueId}`, data, params);
+    return await this._post(`/api/issues/${issueId}`, data, params)
   }
 
   async deleteIssue(issueId: string) {
-    return await this._delete(`/api/issues/${issueId}`);
+    return await this._delete(`/api/issues/${issueId}`)
   }
 
   async addIssue(data?: object, params?: object): Promise<Issue> {
-    return await this._post(`/api/issues`, data, params);
+    return await this._post(`/api/issues`, data, params)
   }
 
   async addIssueToSprint(
     agileId: string,
     sprintId: string,
-    issueId: string,
+    issueId: string
   ): Promise<Issue> {
     return await this._post(
       `/api/agiles/${agileId}/sprints/${sprintId}/issues`,
       {
         id: issueId,
         $type: "Issue",
-      },
-    );
+      }
+    )
   }
 
   getStates(params?: object) {
@@ -218,22 +219,25 @@ export class YoutrackClient {
         "isUpdateable",
       ].join(","),
       ...params,
-    });
+    })
   }
 
   getUsers() {
     return this._get("/api/users", {
       fields: ["id", "login", "fullName", "banned"].join(","),
-    });
+    })
   }
 
   async getMe(): Promise<void> {
     try {
       this.self = await this._get("/api/users/me", {
         fields: ["id", "login", "fullName", "banned"].join(","),
-      });
+      })
     } catch (error) {
-      console.log("youtrack-vscode-extension request failed:", (error as AxiosError).response);
+      console.log(
+        "youtrack-vscode-extension request failed:",
+        (error as AxiosError).response
+      )
     }
   }
 }
