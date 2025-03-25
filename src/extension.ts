@@ -63,9 +63,9 @@ export function activate(context: vscode.ExtensionContext) {
         const baseUrl: string = serversView.selection[0].url
         const token: string = serversView.selection[0].token
         const isCertificateValidated =
-          vscode.workspace
+          !!vscode.workspace
             .getConfiguration("youtrack")
-            .get<boolean>("validateCertificate") || true
+            .get<boolean>("validateCertificate");
 
         youtrackClient = new YoutrackClient(
           baseUrl,
