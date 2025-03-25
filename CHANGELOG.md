@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.6.1 - 2025-03-25
+
+- Fixed error in certificate verification logic.
+
 ## 1.6.0 - 2024-10-09
 
 - Implemented a configuration option for disabling certificate validation.
