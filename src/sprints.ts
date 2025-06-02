@@ -444,7 +444,7 @@ export class SprintsIssuesProvider
         const repo = gitAPI.repositories[0]
         const nameTemplate: string = vscode.workspace.getConfiguration("youtrack").get("branchNameTemplate") ?? item.issue.id;
         const name = nameTemplate
-            .replace('${issue.id}', item.issue.id)
+            .replace('${issue.id}', item.code)
             .replace('${issue.summary}', item.issue.summary ?? '')
             .replace(/[^a-zA-Z0-9-_]/g, '-')
             .toLowerCase();
