@@ -46,7 +46,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
       ignoreFocusOut: true,
     })
 
-    servers = JSON.parse((await this.context.secrets.get("servers")) || "[]")
+    servers = JSON.parse((await this.context.secrets.get("servers")) ?? "[]")
     const serverExists = servers.find((server: ServerInfo) => server.url === url)
 
     if (serverExists) { 
@@ -71,7 +71,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
       id: this.servers.length,
       url: url.replace(/\/+$/, ""),
       token: token,
-      label: label || url.replace("https://", ""),
+      label: label ?? url.replace("https://", ""),
     }
     servers.push(server)
 
@@ -91,7 +91,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
         prompt: "Please specify YouTrack server address",
         value: server.url,
         ignoreFocusOut: true,
-      })) || ""
+      })) ?? ""
     ).replace(/\/+$/, "")
 
     if (!url) {
@@ -101,7 +101,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
       return
     } else {
       servers = JSON.parse(
-        (await this.context.secrets.get("servers")) || "[]"
+        (await this.context.secrets.get("servers")) ?? "[]"
       ).filter(
         (existingServer: ServerInfo) => server.url !== existingServer.url
       )
@@ -121,14 +121,14 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
         prompt: "Please specify YouTrack server label (optional)",
         value: server.label?.toString(),
         ignoreFocusOut: true,
-      })) || url.replace("https://", "")
+      })) ?? url.replace("https://", "")
 
     const token =
       (await vscode.window.showInputBox({
         placeHolder: "API key",
         prompt: "Specify YouTrack server API key",
         ignoreFocusOut: true,
-      })) || server.token
+      })) ?? server.token
 
     const serverNew: ServerInfo = {
       id: this.servers.length,
@@ -172,7 +172,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
 
   async getServers(): Promise<ServerItem[]> {
     this.servers = JSON.parse(
-      (await this.context.secrets.get("servers")) || "[]"
+      (await this.context.secrets.get("servers")) ?? "[]"
     )
     if (this.servers.length > 0) {
       return this.servers.map((s) => new ServerItem(s))
