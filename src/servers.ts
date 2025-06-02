@@ -1,4 +1,4 @@
-import * as vscode from "vscode"
+import * as vscode from "vscode";
 
 interface ServerInfo {
   id: number
@@ -47,9 +47,9 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
     })
 
     servers = JSON.parse((await this.context.secrets.get("servers")) || "[]")
-    let serverExists = servers.find((server: ServerInfo) => server.url === url)
+    const serverExists = servers.find((server: ServerInfo) => server.url === url)
 
-    if (serverExists) {
+    if (serverExists) { 
       vscode.window.showErrorMessage("Server with this URL already exists")
       return
     }
@@ -67,7 +67,7 @@ export class ServersProvider implements vscode.TreeDataProvider<ServerItem> {
       return
     }
 
-    let server: ServerInfo = {
+    const server: ServerInfo = {
       id: this.servers.length,
       url: url.replace(/\/+$/, ""),
       token: token,

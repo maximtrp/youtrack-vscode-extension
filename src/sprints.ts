@@ -1,8 +1,8 @@
-import * as vscode from "vscode"
-import { API } from "./api/git"
-import { YoutrackClient } from "./client"
-import { GroupingItem, IssueItem, SprintItem, None } from "./sprints.items"
-import { AxiosError } from "axios"
+import { AxiosError } from "axios";
+import * as vscode from "vscode";
+import { API } from "./api/git";
+import { YoutrackClient } from "./client";
+import { GroupingItem, IssueItem, None, SprintItem } from "./sprints.items";
 
 export class SprintsIssuesProvider
   implements
@@ -442,9 +442,16 @@ export class SprintsIssuesProvider
         const gitAPI: API = gitExtension.getAPI(1)
 
         const repo = gitAPI.repositories[0]
+        const nameTemplate: string = vscode.workspace.getConfiguration("youtrack").get("branchNameTemplate") ?? item.issue.id;
+        const name = nameTemplate
+            .replace('${issue.id}', item.issue.id)
+            .replace('${issue.summary}', item.issue.summary ?? '')
+            .replace(/[^a-zA-Z0-9-_]/g, '-')
+            .toLowerCase();
+        
         if (repo) {
           try {
-            await repo.checkout(item.code.toLowerCase())
+            await repo.checkout(name)
             // console.log(repo.state.HEAD?.name);
           } catch (error) {
             console.error(error)
@@ -452,7 +459,7 @@ export class SprintsIssuesProvider
               await vscode.window.showInputBox({
                 ignoreFocusOut: true,
                 placeHolder: "Branch name",
-                value: item.code.toLowerCase(),
+                value: name,
                 title: "Specify a branch name to create for this issue",
               })
             if (branchName) {
