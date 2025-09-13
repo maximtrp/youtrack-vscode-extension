@@ -1,8 +1,8 @@
-import * as vscode from "vscode"
-import { API } from "./api/git"
-import { YoutrackClient } from "./client"
-import { GroupingItem, IssueItem, SprintItem, None } from "./sprints.items"
-import { AxiosError } from "axios"
+import { AxiosError } from "axios";
+import * as vscode from "vscode";
+import { API } from "./api/git";
+import { YoutrackClient } from "./client";
+import { GroupingItem, IssueItem, None, SprintItem } from "./sprints.items";
 
 export class SprintsIssuesProvider
   implements
@@ -37,7 +37,7 @@ export class SprintsIssuesProvider
     if (this.columnSettings) {
       return this.columnSettings.columns
         .flatMap((col) => col.fieldValues)
-        .map((cfv) => new GroupingItem(cfv.name || cfv.id, element?.sprint))
+        .map((cfv) => new GroupingItem(cfv.name ?? cfv.id, element?.sprint))
     } else {
       return [new None("No states found")]
     }
@@ -47,12 +47,12 @@ export class SprintsIssuesProvider
     // console.log(this.enumBundles);
     if (this.enumBundles) {
       const priorities = (
-        this.enumBundles.find((bundle) => bundle.name === "Priorities") || {}
+        this.enumBundles.find((bundle) => bundle.name === "Priorities") ?? {}
       ).values
       if (priorities) {
         return priorities.map(
           (priority) =>
-            new GroupingItem(priority.name || priority.id, element?.sprint)
+            new GroupingItem(priority.name ?? priority.id, element?.sprint)
         )
       }
     }
@@ -62,11 +62,11 @@ export class SprintsIssuesProvider
   async getTypes(element?: SprintItem) {
     if (this.enumBundles) {
       const types = (
-        this.enumBundles.find((bundle) => bundle.name === "Types") || {}
+        this.enumBundles.find((bundle) => bundle.name === "Types") ?? {}
       ).values
       if (types) {
         return types.map(
-          (type) => new GroupingItem(type.name || type.id, element?.sprint)
+          (type) => new GroupingItem(type.name ?? type.id, element?.sprint)
         )
       }
     }
@@ -89,7 +89,7 @@ export class SprintsIssuesProvider
     element?: SprintItem | GroupingItem | None
   ): Promise<IssueItem[] | SprintItem[] | GroupingItem[] | None[]> {
     const groupby: string =
-      vscode.workspace.getConfiguration("youtrack").get("groupIssuesBy") ||
+      vscode.workspace.getConfiguration("youtrack").get("groupIssuesBy") ??
       "None"
 
     if (this.client && this.project) {
@@ -98,15 +98,15 @@ export class SprintsIssuesProvider
         const sortOrder: string = (
           vscode.workspace
             .getConfiguration("youtrack")
-            .get<string>("sortOrder") || "desc"
+            .get<string>("sortOrder") ?? "desc"
         ).toLowerCase()
         const sortby: string =
-          vscode.workspace.getConfiguration("youtrack").get("sortIssuesBy") ||
+          vscode.workspace.getConfiguration("youtrack").get("sortIssuesBy") ??
           "Default"
         const assignedto: string =
           vscode.workspace
             .getConfiguration("youtrack")
-            .get("showIssuesAssignedTo") || "Anyone"
+            .get("showIssuesAssignedTo") ?? "Anyone"
 
         // GROUPING LOGIC
         if (element.contextValue === "sprint" && groupby !== "None") {
@@ -118,7 +118,7 @@ export class SprintsIssuesProvider
           try {
             const issues: Issue[] | null = await this.client.getIssues({
               query:
-                `project:{${this.project.name || this.project.id}} ` +
+                `project:{${this.project.name ?? this.project.id}} ` +
                 (groupby !== "None" && !!element.contextValue
                   ? `${groupby}:{${element.label}} `
                   : "") +
@@ -172,7 +172,7 @@ export class SprintsIssuesProvider
         (await vscode.window.showInputBox({
           ignoreFocusOut: true,
           title: "Issue summary",
-        })) || ""
+        })) ?? ""
       if (!summary) {
         vscode.window.showInformationMessage(
           "Issue was not created due to the empty summary"
@@ -198,7 +198,7 @@ export class SprintsIssuesProvider
       if (this.columnSettings) {
         const states: string[] = this.columnSettings.columns
           .flatMap((col) => col.fieldValues)
-          .map((cfv) => cfv.name || cfv.id)
+          .map((cfv) => cfv.name ?? cfv.id)
 
         const state: string | undefined = await vscode.window.showQuickPick(
           states,
@@ -226,7 +226,7 @@ export class SprintsIssuesProvider
       //   const bundlesDict: { [key: string]: string } = { Types: "Type", Priorities: "Priority" };
 
       //   for (let bundle of this.enumBundles) {
-      //     const values: string[] = bundle.values.map((item) => item.name || "").filter((item) => !!item);
+      //     const values: string[] = bundle.values.map((item) => item.name ?? "").filter((item) => !!item);
 
       //     const value = await vscode.window.showQuickPick(values, {
       //       canPickMany: false,
@@ -262,7 +262,7 @@ export class SprintsIssuesProvider
       // Adding issue to a sprint
       if (this.agile && this.sprints) {
         const sprints: string[] = this.sprints
-          .map((sprint) => sprint.name || "")
+          .map((sprint) => sprint.name ?? "")
           .filter((name) => !!name)
         const selectedSprint: string | undefined =
           await vscode.window.showQuickPick(sprints, {
@@ -357,7 +357,7 @@ export class SprintsIssuesProvider
     if (this.client && this.project && this.columnSettings) {
       const states: string[] = this.columnSettings.columns
         .flatMap((col) => col.fieldValues)
-        .map((cfv) => cfv.name || cfv.id)
+        .map((cfv) => cfv.name ?? cfv.id)
       const state: string | undefined = await vscode.window.showQuickPick(
         states,
         {
@@ -380,10 +380,10 @@ export class SprintsIssuesProvider
   async updateIssueEnumBundle(issue: Issue, name: string, bundleName: string) {
     if (this.client && this.enumBundles) {
       const values: string[] = (
-        this.enumBundles.find((bundle) => bundle.name === bundleName) || {
+        this.enumBundles.find((bundle) => bundle.name === bundleName) ?? {
           values: [],
         }
-      ).values.map((item) => item.name || item.id)
+      ).values.map((item) => item.name ?? item.id)
 
       const value: string | undefined = await vscode.window.showQuickPick(
         values,
@@ -442,9 +442,16 @@ export class SprintsIssuesProvider
         const gitAPI: API = gitExtension.getAPI(1)
 
         const repo = gitAPI.repositories[0]
+        const nameTemplate: string = vscode.workspace.getConfiguration("youtrack").get("branchNameTemplate") ?? item.issue.id;
+        const name = nameTemplate
+            .replace('${issue.id}', item.code)
+            .replace('${issue.summary}', item.issue.summary ?? '')
+            .replace(/[^a-zA-Z0-9-_]/g, '-')
+            .toLowerCase();
+        
         if (repo) {
           try {
-            await repo.checkout(item.code.toLowerCase())
+            await repo.checkout(name)
             // console.log(repo.state.HEAD?.name);
           } catch (error) {
             console.error(error)
@@ -452,7 +459,7 @@ export class SprintsIssuesProvider
               await vscode.window.showInputBox({
                 ignoreFocusOut: true,
                 placeHolder: "Branch name",
-                value: item.code.toLowerCase(),
+                value: name,
                 title: "Specify a branch name to create for this issue",
               })
             if (branchName) {

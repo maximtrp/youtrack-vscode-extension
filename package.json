@@ -108,6 +108,11 @@
             "type": "boolean",
             "default": true,
             "description": "Validate certificates to ensure a secure TLS connection. Be careful when turning this off. Please understand that without it, there is no guarantee about who the other party of a TLS connection is, making man-in-the-middle attacks more likely to occur."
+          },
+          "youtrack.branchNameTemplate": {
+            "type": "string",
+            "default": "${issue.id}",
+            "description": "Template for branch names. You can use the following variables:\n\n ${issue.id} \n ${issue.summary} \n\n The template will be sanitized to remove any characters that are not allowed in branch names."
           }
         }
       }
