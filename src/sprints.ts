@@ -1,8 +1,8 @@
-import { AxiosError } from "axios";
-import * as vscode from "vscode";
-import { API } from "./api/git";
-import { YoutrackClient } from "./client";
-import { GroupingItem, IssueItem, None, SprintItem } from "./sprints.items";
+import { AxiosError } from "axios"
+import * as vscode from "vscode"
+import { API } from "./api/git"
+import { YoutrackClient } from "./client"
+import { GroupingItem, IssueItem, None, SprintItem } from "./sprints.items"
 
 export class SprintsIssuesProvider
   implements
@@ -107,6 +107,10 @@ export class SprintsIssuesProvider
           vscode.workspace
             .getConfiguration("youtrack")
             .get("showIssuesAssignedTo") ?? "Anyone"
+        const showResolvedIssues: boolean =
+          vscode.workspace
+            .getConfiguration("youtrack")
+            .get<boolean>("showResolvedIssues") ?? true
 
         // GROUPING LOGIC
         if (element.contextValue === "sprint" && groupby !== "None") {
@@ -126,6 +130,7 @@ export class SprintsIssuesProvider
                   ? `sort by:{${sortby}} ${sortOrder} `
                   : "") +
                 (assignedto !== "Anyone" ? `for:${assignedto} ` : "") +
+                (!showResolvedIssues ? `#Unresolved ` : "") +
                 (sprintName ? `#{${sprintName}}` : ""),
             })
 
@@ -442,13 +447,16 @@ export class SprintsIssuesProvider
         const gitAPI: API = gitExtension.getAPI(1)
 
         const repo = gitAPI.repositories[0]
-        const nameTemplate: string = vscode.workspace.getConfiguration("youtrack").get("branchNameTemplate") ?? item.issue.id;
+        const nameTemplate: string =
+          vscode.workspace
+            .getConfiguration("youtrack")
+            .get("branchNameTemplate") ?? item.issue.id
         const name = nameTemplate
-            .replace('${issue.id}', item.code)
-            .replace('${issue.summary}', item.issue.summary ?? '')
-            .replace(/[^a-zA-Z0-9-_]/g, '-')
-            .toLowerCase();
-        
+          .replace("${issue.id}", item.code)
+          .replace("${issue.summary}", item.issue.summary ?? "")
+          .replace(/[^a-zA-Z0-9-_]/g, "-")
+          .toLowerCase()
+
         if (repo) {
           try {
             await repo.checkout(name)

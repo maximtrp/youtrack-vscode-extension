@@ -62,10 +62,9 @@ export function activate(context: vscode.ExtensionContext) {
       if (serversView.selection.length > 0) {
         const baseUrl: string = serversView.selection[0].url
         const token: string = serversView.selection[0].token
-        const isCertificateValidated =
-          !!vscode.workspace
-            .getConfiguration("youtrack")
-            .get<boolean>("validateCertificate");
+        const isCertificateValidated = !!vscode.workspace
+          .getConfiguration("youtrack")
+          .get<boolean>("validateCertificate")
 
         youtrackClient = new YoutrackClient(
           baseUrl,
@@ -234,6 +233,30 @@ export function activate(context: vscode.ExtensionContext) {
     "youtrack.showUnassignedIssues",
     async () => {
       await setConfiguration("youtrack.showIssuesAssignedTo", "Unassigned")
+      sprintIssuesProvider.refresh(youtrackClient)
+      recentIssuesProvider.refresh(youtrackClient)
+    }
+  )
+  const commandToggleResolvedIssues = vscode.commands.registerCommand(
+    "youtrack.toggleResolvedIssues",
+    async () => {
+      const currentValue =
+        vscode.workspace
+          .getConfiguration("youtrack")
+          .get<boolean>("showResolvedIssues") ?? true
+      await setConfiguration("youtrack.showResolvedIssues", !currentValue)
+      sprintIssuesProvider.refresh(youtrackClient)
+      recentIssuesProvider.refresh(youtrackClient)
+    }
+  )
+  const commandToggleResolvedIssuesUnchecked = vscode.commands.registerCommand(
+    "youtrack.toggleResolvedIssuesUnchecked",
+    async () => {
+      const currentValue =
+        vscode.workspace
+          .getConfiguration("youtrack")
+          .get<boolean>("showResolvedIssues") ?? true
+      await setConfiguration("youtrack.showResolvedIssues", !currentValue)
       sprintIssuesProvider.refresh(youtrackClient)
       recentIssuesProvider.refresh(youtrackClient)
     }
@@ -414,6 +437,8 @@ export function activate(context: vscode.ExtensionContext) {
       commandShowIssuesAssignedToMe,
       commandShowIssuesAssignedToAnyone,
       commandShowUnassignedIssues,
+      commandToggleResolvedIssues,
+      commandToggleResolvedIssuesUnchecked,
       commandUpdateIssueAssignee,
       commandUpdateIssueSummary,
       commandUpdateIssuePriority,
@@ -437,7 +462,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {}
 
-async function setConfiguration(field: string, value: string) {
+async function setConfiguration(field: string, value: string | boolean) {
   await vscode.workspace
     .getConfiguration()
     .update(field, value, vscode.ConfigurationTarget.Global)

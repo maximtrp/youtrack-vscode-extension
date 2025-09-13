@@ -41,13 +41,18 @@ export class RecentIssuesProvider
         vscode.workspace
           .getConfiguration("youtrack")
           .get("showIssuesAssignedTo") || "Anyone"
+      const showResolvedIssues: boolean =
+        vscode.workspace
+          .getConfiguration("youtrack")
+          .get<boolean>("showResolvedIssues") ?? true
 
       // ISSUES
-      let issues: Issue[] | null = await this.client.getIssues({
+      const issues: Issue[] | null = await this.client.getIssues({
         query:
           `project:{${this.project.name || this.project.id}} ` +
           (sortby !== "Default" ? `sort by:{${sortby}} ${sortOrder} ` : "") +
-          (assignedto !== "Anyone" ? `for:${assignedto} ` : ""),
+          (assignedto !== "Anyone" ? `for:${assignedto} ` : "") +
+          (!showResolvedIssues ? `#Unresolved ` : ""),
       })
 
       if (issues && issues.length > 0) {

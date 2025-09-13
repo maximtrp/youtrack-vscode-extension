@@ -3,7 +3,7 @@
   "publisher": "maximtrp",
   "displayName": "YouTrack for VS Code",
   "description": "Browse and manage issues in multiple YouTrack servers",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "icon": "resources/youtrack.png",
   "author": {
     "name": "Maksim Terpilovskii",
@@ -113,6 +113,10 @@
             "type": "string",
             "default": "${issue.id}",
             "description": "Template for branch names. You can use the following variables:\n\n ${issue.id} \n ${issue.summary} \n\n The template will be sanitized to remove any characters that are not allowed in branch names."
+          "youtrack.showResolvedIssues": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show resolved issues in the issue list"
           }
         }
       }
@@ -296,6 +300,16 @@
         "command": "youtrack.deleteIssue",
         "title": "Delete an Issue",
         "category": "YouTrack"
+      },
+      {
+        "command": "youtrack.toggleResolvedIssues",
+        "title": "Hide Resolved Issues",
+        "category": "YouTrack"
+      },
+      {
+        "command": "youtrack.toggleResolvedIssuesUnchecked",
+        "title": "Show Resolved Issues",
+        "category": "YouTrack"
       }
     ],
     "views": {
@@ -337,6 +351,10 @@
       {
         "id": "youtrack.filter.assignedto",
         "label": "Assigned to"
+      },
+      {
+        "id": "youtrack.filter.resolved",
+        "label": "Resolved"
       },
       {
         "id": "youtrack.issue",
@@ -425,6 +443,16 @@
           "command": "youtrack.showUnassignedIssues"
         }
       ],
+      "youtrack.filter.resolved": [
+        {
+          "command": "youtrack.toggleResolvedIssues",
+          "when": "config.youtrack.showResolvedIssues"
+        },
+        {
+          "command": "youtrack.toggleResolvedIssuesUnchecked",
+          "when": "!config.youtrack.showResolvedIssues"
+        }
+      ],
       "youtrack.filter.sortby": [
         {
           "command": "youtrack.sortIssuesByDefault"
@@ -465,6 +493,10 @@
         },
         {
           "submenu": "youtrack.filter.assignedto",
+          "when": "view == youtrack-sprints || view == youtrack-recent-issues"
+        },
+        {
+          "submenu": "youtrack.filter.resolved",
           "when": "view == youtrack-sprints || view == youtrack-recent-issues"
         }
       ],
@@ -669,6 +701,14 @@
         },
         {
           "command": "youtrack.createBranch",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.toggleResolvedIssues",
+          "when": "false"
+        },
+        {
+          "command": "youtrack.toggleResolvedIssuesUnchecked",
           "when": "false"
         }
       ]
