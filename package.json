@@ -113,6 +113,7 @@
             "type": "string",
             "default": "${issue.id}",
             "description": "Template for branch names. You can use the following variables:\n\n ${issue.id} \n ${issue.summary} \n\n The template will be sanitized to remove any characters that are not allowed in branch names."
+          },
           "youtrack.showResolvedIssues": {
             "type": "boolean",
             "default": true,
@@ -727,27 +728,27 @@
     "deploy": "vsce publish && ovsx publish"
   },
   "devDependencies": {
-    "@eslint/js": "^9.23.0",
+    "@eslint/js": "^9.35.0",
     "@types/eslint__js": "^8.42.3",
     "@types/glob": "^8.1.0",
     "@types/node": "18.x",
     "@types/vscode": "^1.60.0",
     "buffer": "^6.0.3",
-    "eslint": "^9.23.0",
+    "eslint": "^9.35.0",
     "glob": "^11.0.0",
     "https-browserify": "^1.0.0",
     "process": "^0.11.10",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "ts-loader": "^9.5.2",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.28.0",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.43.0",
     "url": "^0.11.4",
-    "webpack": "^5.98.0",
+    "webpack": "^5.101.0",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "axios": "^1.8.0"
+    "axios": "^1.12.0"
   }
 }
