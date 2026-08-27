@@ -35,8 +35,7 @@
 
 ## 1.5.1 - 2023-09-09
 
-- Implemented autorefresh of agiles/projects after server editing (if an edited
-  server was selected).
+- Implemented autorefresh of agiles/projects after server editing (if an edited server was selected).
 
 ## 1.5.0 (2023-08-24)
 
@@ -55,8 +54,7 @@
 ## 1.2.0 (2023-04-02)
 
 - Extension bundler changed to `webpack`.
-- Extension can now be used in a web environment
-  ([VS Code for Web](https://vscode.dev)). Be sure to
+- Extension can now be used in a web environment ([VS Code for Web](https://vscode.dev)). Be sure to
   [set CORS settings](README.md#web-extension) for your YouTrack server.
 
 ## 1.1.2 (2023-03-25)

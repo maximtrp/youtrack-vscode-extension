@@ -7,7 +7,7 @@ export function buildBranchName(template: string, { code, summary }: BranchNameP
   return template
     .replace(/\$\{issue\.id\}/g, code)
     .replace(/\$\{issue\.summary\}/g, summary)
-    .replace(/[^a-zA-Z0-9-_/]/g, "-")
+    .replace(/[^\w/-]/g, "-")
     .replace(/-{2,}/g, "-")
     .replace(/^-|-$/g, "")
     .toLowerCase()
