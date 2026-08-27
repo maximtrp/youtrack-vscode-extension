@@ -1,0 +1,64 @@
+name: Bug report
+description: Something in the extension does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Select a server
+        2. Select an agile board
+        3. ...
+    validations:
+      required: true
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension version
+      placeholder: "1.7.0"
+    validations:
+      required: true
+
+  - type: input
+    id: vscode-version
+    attributes:
+      label: VS Code version
+      description: Help → About (or Code → About Visual Studio Code)
+    validations:
+      required: true
+
+  - type: input
+    id: youtrack-version
+    attributes:
+      label: YouTrack version
+      description: Your instance's version, from the administration page. Cloud or self-hosted?
+    validations:
+      required: true
+
+  - type: textarea
+    id: settings
+    attributes:
+      label: YouTrack settings
+      description: >
+        Your `youtrack.*` settings. In the command palette run "Preferences: Open User Settings (JSON)"
+        and paste the `youtrack.` entries. Settings such as `groupIssuesBy` and `sortIssuesBy` change how
+        issues are queried, so they matter for most issue-list reports.
+      render: json
+
+  - type: textarea
+    id: board
+    attributes:
+      label: Board setup (for issue list problems)
+      description: >
+        Is it a Scrum board (with sprints) or a Kanban board? Which field are the board columns based on,
+        and what are the column names?

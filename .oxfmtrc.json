@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 120,
+  "proseWrap": "always",
+  "semi": false,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "ignorePatterns": [
+    "dist",
+    "out",
+    "test-resources",
+    "src/api/git.d.ts"
+  ]
+}

@@ -5,20 +5,17 @@
 ![Open VSX Downloads](https://img.shields.io/open-vsx/dt/maximtrp/youtrack-ext?label=downloads:+OpenVSX)
 ![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/maximtrp.youtrack-ext?label=downloads:+VSM)
 
-This extension provides basic integration between
-[YouTrack](https://www.jetbrains.com/youtrack/) and VS Code. It allows you to
-browse your agiles and issues, quickly create or checkout git branches and
-update issue information. This is an unofficial extension and not affiliated
-with [JetBrains](#copyright-attributions).
+This extension provides basic integration between [YouTrack](https://www.jetbrains.com/youtrack/) and VS Code. It allows
+you to browse your agiles and issues, quickly create or checkout git branches and update issue information. This is an
+unofficial extension and not affiliated with [JetBrains](#copyright-attributions).
 
 <img src="resources/screenshot.png" height="768" alt="Screenshot" />
 
 ## Installation
 
 The extension is available in
-[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=maximtrp.youtrack-ext)
-and [Open VSX](https://open-vsx.org/extension/maximtrp/youtrack-ext). To use
-this extension, you should create a
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=maximtrp.youtrack-ext) and
+[Open VSX](https://open-vsx.org/extension/maximtrp/youtrack-ext). To use this extension, you should create a
 [personal access token](https://www.jetbrains.com/help/youtrack/standalone/Manage-Permanent-Token.html#obtain-permanent-token)
 (usually prefixed with `perm`).
 
@@ -32,8 +29,7 @@ this extension, you should create a
 
 ## Web Extension
 
-To use this extension in a web environment
-([VS Code for Web](https://vscode.dev/)), you must set CORS parameters using
+To use this extension in a web environment ([VS Code for Web](https://vscode.dev/)), you must set CORS parameters using
 [this API](https://www.jetbrains.com/help/youtrack/devportal/resource-api-admin-globalSettings-restSettings.html).
 
 For example, you can make a similar request using
@@ -54,13 +50,12 @@ Content-Type: application/json
 
 ## Donate
 
-If you find this extension useful, please consider donating any amount of money.
-This will help me spend more time on supporting open-source software.
+If you find this extension useful, please consider donating any amount of money. This will help me spend more time on
+supporting open-source software.
 
 <a href="https://www.buymeacoffee.com/maximtrp" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## Copyright attributions
 
-Copyright © 2023 JetBrains s.r.o.
-[YouTrack](https://www.jetbrains.com/youtrack/) and the YouTrack logo are
-registered trademarks of [JetBrains s.r.o](https://www.jetbrains.com).
+Copyright © 2026 JetBrains s.r.o. [YouTrack](https://www.jetbrains.com/youtrack/) and the YouTrack logo are registered
+trademarks of [JetBrains s.r.o](https://www.jetbrains.com).

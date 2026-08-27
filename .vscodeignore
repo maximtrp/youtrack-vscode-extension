@@ -5,7 +5,13 @@ src/**
 .yarnrc
 vsc-extension-quickstart.md
 **/tsconfig.json
-**/.eslintrc.json
+.oxlintrc.json
+.oxfmtrc.json
+vitest.config.*
+build.mjs
+.editorconfig
+.nvmrc
+coverage/
 **/*.map
 **/*.ts
 dist/

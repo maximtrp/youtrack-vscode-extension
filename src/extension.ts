@@ -1,469 +1,237 @@
 import * as vscode from "vscode"
-import { ServersProvider, ServerItem } from "./servers"
-import {
-  AgilesProjectsProvider,
-  AgileItem,
-  ProjectItem,
-  None as AgileNone,
-} from "./agiles"
-import { SprintsIssuesProvider } from "./sprints"
-import { RecentIssuesProvider } from "./recent"
-import { IssueItem } from "./sprints.items"
-import { YoutrackClient } from "./client"
+import { YoutrackClient } from "./api/youtrackClient"
+import { settings } from "./config/settings"
+import { CaCertificateError } from "./api/httpAgent.node"
+import { toUserMessage } from "./domain/errors"
+import { PRIORITY, TYPE } from "./domain/issueFields"
+import { AgilesProjectsProvider } from "./views/agilesView"
+import { IssueCommands } from "./views/issueCommands"
+import { IssueDescriptionPanel } from "./views/issueDescription"
+import { SprintsIssuesProvider } from "./views/issuesView"
+import { AgileItem, IssueItem, ProjectItem, ServerItem } from "./views/items"
+import { RecentIssuesProvider } from "./views/recentView"
+import { ServersProvider } from "./views/serversView"
 
 export function activate(context: vscode.ExtensionContext) {
-  let youtrackClient: YoutrackClient | undefined
+  let client: YoutrackClient | undefined
 
-  const serversProvider = new ServersProvider(context)
-  vscode.window.registerTreeDataProvider("youtrack-servers", serversProvider)
+  const serversProvider = new ServersProvider(context.secrets)
+  const agilesProvider = new AgilesProjectsProvider()
+  const issuesProvider = new SprintsIssuesProvider()
+  const recentProvider = new RecentIssuesProvider()
+  const descriptionPanel = new IssueDescriptionPanel()
 
-  const agileProjectsProvider = new AgilesProjectsProvider()
-  vscode.window.registerTreeDataProvider(
-    "youtrack-agiles",
-    agileProjectsProvider
-  )
+  const serversTree = vscode.window.createTreeView("youtrack-servers", { treeDataProvider: serversProvider })
+  const agilesTree = vscode.window.createTreeView("youtrack-agiles", { treeDataProvider: agilesProvider })
+  const issuesTree = vscode.window.createTreeView("youtrack-sprints", { treeDataProvider: issuesProvider })
+  const recentTree = vscode.window.createTreeView("youtrack-recent-issues", { treeDataProvider: recentProvider })
 
-  const sprintIssuesProvider = new SprintsIssuesProvider()
-  vscode.window.registerTreeDataProvider(
-    "youtrack-sprints",
-    sprintIssuesProvider
-  )
+  const refreshIssueViews = () => {
+    issuesProvider.refresh(client)
+    recentProvider.refresh(client)
+  }
 
-  const recentIssuesProvider = new RecentIssuesProvider()
-  vscode.window.registerTreeDataProvider(
-    "youtrack-recent-issues",
-    recentIssuesProvider
-  )
+  const refreshAll = () => {
+    agilesProvider.refresh(client)
+    refreshIssueViews()
+  }
 
-  const serversTree = vscode.window.createTreeView<ServerItem>(
-    "youtrack-servers",
-    {
-      treeDataProvider: serversProvider,
+  const connect = async (server: ServerItem) => {
+    try {
+      client = await YoutrackClient.create({
+        url: server.url,
+        token: server.server.token,
+        validateCertificate: settings.validateCertificate(),
+        caCertPath: server.server.caCertPath,
+      })
+    } catch (error) {
+      client = undefined
+      const message =
+        error instanceof CaCertificateError
+          ? error.message
+          : `Could not connect to ${server.url}. ${toUserMessage(error)}`
+      vscode.window.showErrorMessage(message)
     }
-  )
 
-  const agileProjectsTree = vscode.window.createTreeView("youtrack-agiles", {
-    treeDataProvider: agileProjectsProvider,
+    issuesProvider.reset()
+    recentProvider.reset()
+    refreshAll()
+
+    if (!client) {
+      return
+    }
+
+    if (client.enumBundlesError) {
+      vscode.window.showWarningMessage(
+        `Connected, but issue priorities and types could not be read. ${toUserMessage(client.enumBundlesError)}`
+      )
+    }
+
+    const agiles = await agilesProvider.getChildren()
+    const [first] = agiles
+    if (first instanceof AgileItem) {
+      agilesTree.reveal(first, { select: true, focus: true })
+    }
+  }
+
+  const issueCommands = new IssueCommands({
+    client: () => client,
+    context: () => issuesProvider.selection,
+    boardStates: () => issuesProvider.boardStates(),
+    bundleValues: (bundleName) => issuesProvider.bundleValuesFor(bundleName),
+  })
+
+  serversTree.onDidChangeSelection(async ({ selection }) => {
+    const [server] = selection
+    if (server) {
+      await connect(server)
+    }
+  })
+
+  agilesTree.onDidChangeSelection(({ selection }) => {
+    const [item] = selection
+
+    if (item instanceof AgileItem) {
+      const project = item.projects[0]
+      issuesProvider.setContext({
+        agile: item.agile,
+        project,
+        sprints: item.agile.sprints,
+        columnSettings: item.agile.columnSettings,
+        enumBundles: client?.enumBundles,
+      })
+      recentProvider.setProject(project)
+    } else if (item instanceof ProjectItem) {
+      const { agile } = item.parent
+      issuesProvider.setContext({
+        agile,
+        project: item.project,
+        sprints: agile.sprints,
+        columnSettings: agile.columnSettings,
+        enumBundles: client?.enumBundles,
+      })
+      recentProvider.setProject(item.project)
+    } else {
+      return
+    }
+
+    refreshIssueViews()
   })
 
   vscode.workspace.onDidChangeConfiguration(async (event) => {
-    if (
-      !event.affectsConfiguration("youtrack.validateCertificate") ||
-      serversTree.selection.length == 0
-    )
+    if (!event.affectsConfiguration("youtrack.validateCertificate")) {
       return
-
-    const serverSelected = serversTree.selection[0]
-    serversTree.reveal(serverSelected, { select: true, focus: true })
+    }
+    const [server] = serversTree.selection
+    if (server) {
+      await connect(server)
+    }
   })
 
-  serversTree.onDidChangeSelection(
-    async (serversView: vscode.TreeViewSelectionChangeEvent<ServerItem>) => {
-      if (serversView.selection.length > 0) {
-        const baseUrl: string = serversView.selection[0].url
-        const token: string = serversView.selection[0].token
-        const isCertificateValidated = !!vscode.workspace
-          .getConfiguration("youtrack")
-          .get<boolean>("validateCertificate")
+  const settingCommands: [string, () => Promise<void>][] = [
+    ["youtrack.groupIssuesByNone", () => settings.update("groupIssuesBy", "None")],
+    ["youtrack.groupIssuesByState", () => settings.update("groupIssuesBy", "State")],
+    ["youtrack.groupIssuesByPriority", () => settings.update("groupIssuesBy", "Priority")],
+    ["youtrack.groupIssuesByType", () => settings.update("groupIssuesBy", "Type")],
+    ["youtrack.sortIssuesByDefault", () => settings.update("sortIssuesBy", "Default")],
+    ["youtrack.sortIssuesByPriority", () => settings.update("sortIssuesBy", "Priority")],
+    ["youtrack.sortIssuesByState", () => settings.update("sortIssuesBy", "State")],
+    ["youtrack.sortIssuesByType", () => settings.update("sortIssuesBy", "Type")],
+    ["youtrack.sortIssuesByVotes", () => settings.update("sortIssuesBy", "Votes")],
+    ["youtrack.sortIssuesByCreated", () => settings.update("sortIssuesBy", "Created")],
+    ["youtrack.sortIssuesByUpdated", () => settings.update("sortIssuesBy", "Updated")],
+    ["youtrack.sortIssuesByResolvedDate", () => settings.update("sortIssuesBy", "Resolved Date")],
+    ["youtrack.showIssuesAssignedToMe", () => settings.update("showIssuesAssignedTo", "Me")],
+    ["youtrack.showIssuesAssignedToAnyone", () => settings.update("showIssuesAssignedTo", "Anyone")],
+    ["youtrack.showUnassignedIssues", () => settings.update("showIssuesAssignedTo", "Unassigned")],
+  ]
 
-        youtrackClient = new YoutrackClient(
-          baseUrl,
-          token,
-          isCertificateValidated
-        )
-        agileProjectsProvider.refresh(youtrackClient)
-        sprintIssuesProvider.reset().refresh(youtrackClient)
-        recentIssuesProvider.reset().refresh(youtrackClient)
+  const toggleResolved = async () => {
+    await settings.update("showResolvedIssues", !settings.showResolved())
+    refreshIssueViews()
+  }
 
-        const agiles = await agileProjectsProvider.getChildren()
-        if (agiles[0] instanceof AgileItem) {
-          agileProjectsTree.reveal(agiles[0], {
-            select: true,
-            focus: true,
-          })
-        }
-      }
+  const withRefresh =
+    <T extends unknown[]>(action: (...args: T) => Promise<void> | void) =>
+    async (...args: T) => {
+      await action(...args)
+      refreshIssueViews()
     }
-  )
-
-  agileProjectsTree.onDidChangeSelection(
-    async (
-      elements: vscode.TreeViewSelectionChangeEvent<
-        AgileItem | ProjectItem | AgileNone
-      >
-    ) => {
-      if (youtrackClient && elements.selection.length > 0) {
-        const selectedItem = elements.selection[0]
-
-        if (selectedItem.contextValue === "agile") {
-          const selectedAgile = selectedItem as AgileItem
-          sprintIssuesProvider.setEnumBundles(youtrackClient.enumBundles)
-          sprintIssuesProvider.setAgile(selectedAgile.agile)
-          sprintIssuesProvider.setProject((selectedAgile.projects || [])[0])
-          sprintIssuesProvider.setSprints(selectedAgile.sprints)
-          sprintIssuesProvider.setColumnSettings(selectedAgile.columnSettings)
-          recentIssuesProvider.setProject((selectedAgile.projects || [])[0])
-        } else if (selectedItem.contextValue?.startsWith("project")) {
-          const selectedProject = selectedItem as ProjectItem
-          sprintIssuesProvider.setAgile(selectedProject.parent.agile)
-          sprintIssuesProvider.setProject(selectedProject.project)
-          sprintIssuesProvider.setSprints(selectedProject.parent.agile.sprints)
-          sprintIssuesProvider.setColumnSettings(
-            selectedProject.parent.agile.columnSettings
-          )
-          recentIssuesProvider.setProject(selectedProject.project)
-        }
-      }
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-
-  const commandGroupIssuesByState = vscode.commands.registerCommand(
-    "youtrack.groupIssuesByState",
-    async () => {
-      await setConfiguration("youtrack.groupIssuesBy", "State")
-      sprintIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandGroupIssuesByPriority = vscode.commands.registerCommand(
-    "youtrack.groupIssuesByPriority",
-    async () => {
-      await setConfiguration("youtrack.groupIssuesBy", "Priority")
-      sprintIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandGroupIssuesByType = vscode.commands.registerCommand(
-    "youtrack.groupIssuesByType",
-    async () => {
-      await setConfiguration("youtrack.groupIssuesBy", "Type")
-      sprintIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandGroupIssuesByNone = vscode.commands.registerCommand(
-    "youtrack.groupIssuesByNone",
-    async () => {
-      await setConfiguration("youtrack.groupIssuesBy", "None")
-      sprintIssuesProvider.refresh(youtrackClient)
-    }
-  )
-
-  const commandSortIssuesByDefault = vscode.commands.registerCommand(
-    "youtrack.sortIssuesByDefault",
-    async () => {
-      await setConfiguration("youtrack.sortIssuesBy", "Default")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandSortIssuesByPriority = vscode.commands.registerCommand(
-    "youtrack.sortIssuesByPriority",
-    async () => {
-      await setConfiguration("youtrack.sortIssuesBy", "Priority")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandSortIssuesByState = vscode.commands.registerCommand(
-    "youtrack.sortIssuesByState",
-    async () => {
-      await setConfiguration("youtrack.sortIssuesBy", "State")
-      recentIssuesProvider.refresh(youtrackClient)
-      sprintIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandSortIssuesByType = vscode.commands.registerCommand(
-    "youtrack.sortIssuesByType",
-    async () => {
-      await setConfiguration("youtrack.sortIssuesBy", "Type")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandSortIssuesByVotes = vscode.commands.registerCommand(
-    "youtrack.sortIssuesByVotes",
-    async () => {
-      await setConfiguration("youtrack.sortIssuesBy", "Votes")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandSortIssuesByCreated = vscode.commands.registerCommand(
-    "youtrack.sortIssuesByCreated",
-    async () => {
-      await setConfiguration("youtrack.sortIssuesBy", "Created")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandSortIssuesByUpdated = vscode.commands.registerCommand(
-    "youtrack.sortIssuesByUpdated",
-    async () => {
-      await setConfiguration("youtrack.sortIssuesBy", "Updated")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandSortIssuesByResolvedDate = vscode.commands.registerCommand(
-    "youtrack.sortIssuesByResolvedDate",
-    async () => {
-      await setConfiguration("youtrack.sortIssuesBy", "Resolved Date")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-
-  const commandShowIssuesAssignedToMe = vscode.commands.registerCommand(
-    "youtrack.showIssuesAssignedToMe",
-    async () => {
-      await setConfiguration("youtrack.showIssuesAssignedTo", "Me")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandShowIssuesAssignedToAnyone = vscode.commands.registerCommand(
-    "youtrack.showIssuesAssignedToAnyone",
-    async () => {
-      await setConfiguration("youtrack.showIssuesAssignedTo", "Anyone")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandShowUnassignedIssues = vscode.commands.registerCommand(
-    "youtrack.showUnassignedIssues",
-    async () => {
-      await setConfiguration("youtrack.showIssuesAssignedTo", "Unassigned")
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandToggleResolvedIssues = vscode.commands.registerCommand(
-    "youtrack.toggleResolvedIssues",
-    async () => {
-      const currentValue =
-        vscode.workspace
-          .getConfiguration("youtrack")
-          .get<boolean>("showResolvedIssues") ?? true
-      await setConfiguration("youtrack.showResolvedIssues", !currentValue)
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandToggleResolvedIssuesUnchecked = vscode.commands.registerCommand(
-    "youtrack.toggleResolvedIssuesUnchecked",
-    async () => {
-      const currentValue =
-        vscode.workspace
-          .getConfiguration("youtrack")
-          .get<boolean>("showResolvedIssues") ?? true
-      await setConfiguration("youtrack.showResolvedIssues", !currentValue)
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandUpdateIssuePriority = vscode.commands.registerCommand(
-    "youtrack.updateIssuePriority",
-    async (item: IssueItem) => {
-      await sprintIssuesProvider.updateIssueEnumBundle(
-        item.issue,
-        "Priority",
-        "Priorities"
-      )
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandUpdateIssueType = vscode.commands.registerCommand(
-    "youtrack.updateIssueType",
-    async (item: IssueItem) => {
-      await sprintIssuesProvider.updateIssueEnumBundle(
-        item.issue,
-        "Type",
-        "Types"
-      )
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandUpdateIssueState = vscode.commands.registerCommand(
-    "youtrack.updateIssueState",
-    async (item: IssueItem) => {
-      await sprintIssuesProvider.updateIssueState(item.issue)
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-
-  const commandAddServer = vscode.commands.registerCommand(
-    "youtrack.addServer",
-    () => serversProvider.addServer()
-  )
-  const commandEditServer = vscode.commands.registerCommand(
-    "youtrack.editServer",
-    async (server) => {
-      const serverSelected = serversTree.selection[0]
-      const serverNew = await serversProvider.editServer(server)
-
-      if (serverNew && serverSelected.url === server.url) {
-        const isCertificateValidated =
-          vscode.workspace
-            .getConfiguration("youtrack")
-            .get<boolean>("validateCertificate") || true
-        youtrackClient = new YoutrackClient(
-          serverNew.url,
-          serverNew.token,
-          isCertificateValidated
-        )
-        agileProjectsProvider.refresh(youtrackClient)
-        sprintIssuesProvider.reset().refresh(youtrackClient)
-        recentIssuesProvider.reset().refresh(youtrackClient)
-      }
-    }
-  )
-
-  const commandDeleteServer = vscode.commands.registerCommand(
-    "youtrack.deleteServer",
-    (server) => {
-      vscode.window
-        .showInformationMessage(
-          "Are you sure you want to delete this server?",
-          "Yes",
-          "No"
-        )
-        .then(async (answer) => {
-          if (answer === "Yes") {
-            await serversProvider.deleteServer(server)
-
-            if (
-              serversProvider.servers.length === 0 ||
-              (serversTree.selection.length > 0 &&
-                server.label === serversTree.selection[0].label)
-            ) {
-              youtrackClient = undefined
-              sprintIssuesProvider.reset().refresh(youtrackClient)
-              recentIssuesProvider.reset().refresh(youtrackClient)
-              agileProjectsProvider.refresh(youtrackClient)
-              // vscode.commands.executeCommand("setContext", "hasServerSelected", false);
-              // vscode.commands.executeCommand("setContext", "hasRepoSelected", false);
-            }
-          }
-        })
-    }
-  )
-
-  const commandRefreshAgiles = vscode.commands.registerCommand(
-    "youtrack.refreshAgiles",
-    () => agileProjectsProvider.refresh(youtrackClient)
-  )
-  const commandRefreshSprints = vscode.commands.registerCommand(
-    "youtrack.refreshSprints",
-    () => sprintIssuesProvider.refresh(youtrackClient)
-  )
-  const commandRefreshRecentIssues = vscode.commands.registerCommand(
-    "youtrack.refreshRecentIssues",
-    () => recentIssuesProvider.refresh(youtrackClient)
-  )
-  const commandCreateBranch = vscode.commands.registerCommand(
-    "youtrack.createBranch",
-    (issue) => sprintIssuesProvider.createBranch(issue)
-  )
-  const commandAddIssue = vscode.commands.registerCommand(
-    "youtrack.addIssue",
-    async () => {
-      await sprintIssuesProvider.addIssue()
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandUpdateIssueSummary = vscode.commands.registerCommand(
-    "youtrack.updateIssueSummary",
-    async (issue) => {
-      await sprintIssuesProvider.updateIssueSummary(issue)
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandUpdateIssueAssignee = vscode.commands.registerCommand(
-    "youtrack.updateIssueAssignee",
-    async (issue) => {
-      await sprintIssuesProvider.updateIssueAssignee(issue)
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandGotoIssuePage = vscode.commands.registerCommand(
-    "youtrack.gotoIssuePage",
-    (issue) => sprintIssuesProvider.gotoIssuePage(issue)
-  )
-  const commandDeleteIssue = vscode.commands.registerCommand(
-    "youtrack.deleteIssue",
-    async (issue) => {
-      await sprintIssuesProvider.deleteIssue(issue)
-      sprintIssuesProvider.refresh(youtrackClient)
-      recentIssuesProvider.refresh(youtrackClient)
-    }
-  )
-  const commandShowIssueDescription = vscode.commands.registerCommand(
-    "youtrack.showIssueDescription",
-    (description: string) => {
-      const panel = vscode.window.createWebviewPanel(
-        "issueDescription",
-        "Issue Description",
-        vscode.ViewColumn.One,
-        {}
-      )
-      panel.webview.html = description
-    }
-  )
 
   context.subscriptions.push(
-    ...[
-      serversTree,
-      agileProjectsTree,
-      commandAddServer,
-      commandEditServer,
-      commandGroupIssuesByState,
-      commandGroupIssuesByPriority,
-      commandGroupIssuesByType,
-      commandGroupIssuesByNone,
-      commandSortIssuesByDefault,
-      commandSortIssuesByPriority,
-      commandSortIssuesByState,
-      commandSortIssuesByType,
-      commandSortIssuesByVotes,
-      commandSortIssuesByCreated,
-      commandSortIssuesByUpdated,
-      commandSortIssuesByResolvedDate,
-      commandShowIssuesAssignedToMe,
-      commandShowIssuesAssignedToAnyone,
-      commandShowUnassignedIssues,
-      commandToggleResolvedIssues,
-      commandToggleResolvedIssuesUnchecked,
-      commandUpdateIssueAssignee,
-      commandUpdateIssueSummary,
-      commandUpdateIssuePriority,
-      commandUpdateIssueType,
-      commandUpdateIssueState,
-      commandAddServer,
-      commandEditServer,
-      commandDeleteServer,
-      commandRefreshAgiles,
-      commandRefreshSprints,
-      commandRefreshRecentIssues,
-      commandCreateBranch,
-      commandAddIssue,
-      commandDeleteServer,
-      commandGotoIssuePage,
-      commandDeleteIssue,
-      commandShowIssueDescription,
-    ]
+    serversTree,
+    agilesTree,
+    issuesTree,
+    recentTree,
+
+    ...settingCommands.map(([id, apply]) => vscode.commands.registerCommand(id, withRefresh(apply))),
+
+    vscode.commands.registerCommand("youtrack.toggleResolvedIssues", toggleResolved),
+    vscode.commands.registerCommand("youtrack.toggleResolvedIssuesUnchecked", toggleResolved),
+
+    vscode.commands.registerCommand("youtrack.addServer", () => serversProvider.addServer()),
+    vscode.commands.registerCommand("youtrack.editServer", async (item: ServerItem) => {
+      const updated = await serversProvider.editServer(item)
+      const [selected] = serversTree.selection
+      if (updated && selected?.url === item.url) {
+        await connect(new ServerItem(updated))
+      }
+    }),
+    vscode.commands.registerCommand("youtrack.deleteServer", async (item: ServerItem) => {
+      const answer = await vscode.window.showWarningMessage(`Delete ${item.label}?`, { modal: true }, "Delete")
+      if (answer !== "Delete") {
+        return
+      }
+      const [selected] = serversTree.selection
+      await serversProvider.deleteServer(item)
+      if (selected?.url === item.url) {
+        client = undefined
+        issuesProvider.reset()
+        recentProvider.reset()
+        refreshAll()
+      }
+    }),
+
+    vscode.commands.registerCommand("youtrack.refreshAgiles", () => agilesProvider.refresh(client)),
+    vscode.commands.registerCommand("youtrack.refreshSprints", () => issuesProvider.refresh(client)),
+    vscode.commands.registerCommand("youtrack.refreshRecentIssues", () => recentProvider.refresh(client)),
+
+    vscode.commands.registerCommand(
+      "youtrack.addIssue",
+      withRefresh(() => issueCommands.addIssue())
+    ),
+    vscode.commands.registerCommand(
+      "youtrack.updateIssueSummary",
+      withRefresh((item: IssueItem) => issueCommands.updateSummary(item))
+    ),
+    vscode.commands.registerCommand(
+      "youtrack.updateIssueAssignee",
+      withRefresh((item: IssueItem) => issueCommands.updateAssignee(item))
+    ),
+    vscode.commands.registerCommand(
+      "youtrack.updateIssueState",
+      withRefresh((item: IssueItem) => issueCommands.updateState(item))
+    ),
+    vscode.commands.registerCommand(
+      "youtrack.updateIssuePriority",
+      withRefresh((item: IssueItem) => issueCommands.updateEnumField(item, PRIORITY, "Priorities"))
+    ),
+    vscode.commands.registerCommand(
+      "youtrack.updateIssueType",
+      withRefresh((item: IssueItem) => issueCommands.updateEnumField(item, TYPE, "Types"))
+    ),
+    vscode.commands.registerCommand(
+      "youtrack.deleteIssue",
+      withRefresh((item: IssueItem) => issueCommands.deleteIssue(item))
+    ),
+    vscode.commands.registerCommand("youtrack.gotoIssuePage", (item: IssueItem) => issueCommands.gotoIssuePage(item)),
+    vscode.commands.registerCommand("youtrack.createBranch", (item: IssueItem) => issueCommands.createBranch(item)),
+    vscode.commands.registerCommand("youtrack.showIssueDescription", (item: IssueItem) =>
+      descriptionPanel.show(item, client)
+    ),
+
+    { dispose: () => descriptionPanel.dispose() }
   )
 }
 
 export function deactivate() {}
-
-async function setConfiguration(field: string, value: string | boolean) {
-  await vscode.workspace
-    .getConfiguration()
-    .update(field, value, vscode.ConfigurationTarget.Global)
-}

@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.7.0 - 2026-08-27
+
+- Fixed grouped issues showing every project issue in every group on boards without sprints (#10).
+- Fixed the certificate validation setting being ignored when editing a server.
+- Fixed the API token being wiped when editing a server without retyping it.
+- Failed requests now report the YouTrack error instead of being logged to the console and ignored.
+- Issue lists are paginated (`youtrack.pageSize`) and no longer fetch rendered descriptions for every issue.
+- Issue descriptions load on demand in a single reused panel with a restrictive content security policy.
+- Restructured the source into `api`, `domain`, `views` and `config` layers with unit tests for the pure logic.
+- Replaced ESLint and Prettier with oxlint and oxfmt; replaced webpack with esbuild.
+- Added a CI workflow, and the release workflow now verifies the build before publishing.
+
 ## 1.6.1 - 2025-03-25
 
 - Fixed error in certificate verification logic.

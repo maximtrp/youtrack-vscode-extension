@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "promise",
+    "node",
+    "vitest"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn",
+    "pedantic": "off",
+    "style": "off",
+    "nursery": "off",
+    "restriction": "off"
+  },
+  "rules": {
+    "eqeqeq": "error",
+    "no-console": "warn",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "warn",
+    "no-underscore-dangle": "off",
+    "import/no-named-as-default-member": "off",
+    "unicorn/prefer-string-replace-all": "off",
+    "unicorn/no-array-sort": "off",
+    "oxc/no-map-spread": "off"
+  },
+  "env": {
+    "builtin": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "dist",
+    "out",
+    "test-resources"
+  ]
+}
