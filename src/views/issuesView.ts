@@ -80,8 +80,7 @@ export class SprintsIssuesProvider extends ClientTreeProvider<IssueNode> {
   }
 
   private boardColumnValues(): string[] | undefined {
-    const columns = this.context.columnSettings?.columns
-    return columns?.flatMap((column) => column.fieldValues).map((value) => value.name ?? value.id)
+    return stateValues(this.context)
   }
 
   private bundleValues(groupBy: string): string[] | undefined {
@@ -125,4 +124,16 @@ export class SprintsIssuesProvider extends ClientTreeProvider<IssueNode> {
     const bundle = this.context.enumBundles?.find((candidate) => candidate.name === bundleName)
     return bundle?.values.map((value) => value.name ?? value.id) ?? []
   }
+}
+
+export function stateValues(context: SelectionContext): string[] | undefined {
+  const fieldName = context.columnSettings?.field?.name ?? STATE
+  const projectValues = context.project?.customFields
+    ?.find((customField) => customField.field?.name === fieldName)
+    ?.bundle?.values?.map((value) => value.name ?? value.id)
+  const boardValues = context.columnSettings?.columns
+    ?.flatMap((column) => column.fieldValues)
+    .map((value) => value.name ?? value.id)
+  const values = projectValues?.length ? projectValues : boardValues
+  return values ? [...new Set(values)] : undefined
 }

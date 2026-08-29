@@ -1,5 +1,24 @@
 # Change Log
 
+## 2.0.0 - 2026-08-29
+
+- Replaced the description-only issue panel with a comprehensive, responsive issue details view.
+- Added issue metadata, custom fields, tags, votes, attachments, linked issues, comments, change history and VCS
+  commits.
+- Added time tracking details with total logged duration and individual work items.
+- Expanded linked commits with hashes, file counts, authors, dates and pull request labels.
+- YouTrack-rendered descriptions and comments now retain rich formatting while unsafe HTML and links are removed.
+- Links in descriptions and comments are clickable, with relative links resolved against the YouTrack server.
+- Comments are rendered as Markdown with safe HTML and links.
+- Fixed issue history omitting state transitions by requesting the required YouTrack activity categories and supporting
+  single-value changes.
+- Fixed long issue histories being truncated by YouTrack collection limits.
+- Grouped Issues and state pickers now use every state in the project bundle instead of only the agile board columns.
+- Issue details remain available when activity history or VCS data cannot be accessed because of server support or
+  permissions.
+- Added direct VSIX packaging and marketplace publishing scripts with locally pinned `vsce` and `ovsx` tooling.
+- Standardized build and test script names and updated CI and release workflows to use them.
+
 ## 1.7.0 - 2026-08-27
 
 - Fixed grouped issues showing every project issue in every group on boards without sprints (#10).
@@ -35,8 +54,7 @@
 
 ## 1.5.1 - 2023-09-09
 
-- Implemented autorefresh of agiles/projects after server editing (if an edited
-  server was selected).
+- Implemented autorefresh of agiles/projects after server editing (if an edited server was selected).
 
 ## 1.5.0 (2023-08-24)
 
@@ -55,8 +73,7 @@
 ## 1.2.0 (2023-04-02)
 
 - Extension bundler changed to `webpack`.
-- Extension can now be used in a web environment
-  ([VS Code for Web](https://vscode.dev)). Be sure to
+- Extension can now be used in a web environment ([VS Code for Web](https://vscode.dev)). Be sure to
   [set CORS settings](README.md#web-extension) for your YouTrack server.
 
 ## 1.1.2 (2023-03-25)

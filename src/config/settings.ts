@@ -30,7 +30,6 @@ export const settings = {
   validateCertificate: () => read("validateCertificate"),
   branchNameTemplate: () => read("branchNameTemplate"),
   pageSize: () => read("pageSize"),
-
   async update<K extends keyof Settings>(key: K, value: Settings[K]): Promise<void> {
     await vscode.workspace.getConfiguration().update(`${SECTION}.${key}`, value, vscode.ConfigurationTarget.Global)
   },

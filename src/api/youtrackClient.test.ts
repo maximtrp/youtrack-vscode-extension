@@ -64,4 +64,90 @@ describe("YoutrackClient.create", () => {
 
     expect(client.url).toBe("https://youtrack.example")
   })
+
+  it("loads issue details and activities", async () => {
+    const issue = { id: "i", numberInProject: 1, summary: "Issue" }
+    const activities = [{ id: "a", timestamp: 1 }]
+    const workItems = [{ id: "w", duration: { minutes: 60 } }]
+    const vcsChanges = [{ id: "v", version: "abc" }]
+    get.mockResolvedValueOnce({ data: me }).mockResolvedValueOnce({ data: [] })
+    get
+      .mockResolvedValueOnce({ data: issue })
+      .mockResolvedValueOnce({ data: activities })
+      .mockResolvedValueOnce({ data: workItems })
+      .mockResolvedValueOnce({ data: vcsChanges })
+
+    const client = await YoutrackClient.create(options)
+    const details = await client.getIssueDetails("i")
+
+    expect(details).toEqual({
+      issue: { ...issue, workItems, vcsChanges },
+      activities,
+      activityError: undefined,
+      workItemError: undefined,
+      vcsError: undefined,
+    })
+    expect(get).toHaveBeenCalledWith(
+      "/api/issues/i/activities",
+      expect.objectContaining({
+        params: expect.objectContaining({
+          fields: expect.stringContaining("timestamp"),
+          categories: "CustomFieldCategory,IssueResolvedCategory",
+          $top: 42,
+          $skip: 0,
+        }),
+      })
+    )
+    expect(get).toHaveBeenCalledWith(
+      "/api/issues/i/timeTracking/workItems",
+      expect.objectContaining({
+        params: expect.objectContaining({ fields: expect.stringContaining("duration"), $top: 42, $skip: 0 }),
+      })
+    )
+    expect(get).toHaveBeenCalledWith(
+      "/api/issues/i/vcsChanges",
+      expect.objectContaining({
+        params: expect.objectContaining({ fields: expect.stringContaining("version"), $top: 42, $skip: 0 }),
+      })
+    )
+  })
+
+  it("returns issue details when activities are forbidden", async () => {
+    const issue = { id: "i", numberInProject: 1 }
+    get.mockResolvedValueOnce({ data: me }).mockResolvedValueOnce({ data: [] })
+    get
+      .mockResolvedValueOnce({ data: issue })
+      .mockRejectedValueOnce(forbidden())
+      .mockRejectedValueOnce(forbidden())
+      .mockRejectedValueOnce(forbidden())
+
+    const client = await YoutrackClient.create(options)
+    const details = await client.getIssueDetails("i")
+
+    expect(details.issue).toEqual({ ...issue, workItems: [], vcsChanges: [] })
+    expect(details.activities).toEqual([])
+    expect(details.activityError).toBeDefined()
+    expect(details.workItemError).toBeDefined()
+    expect(details.vcsError).toBeDefined()
+  })
+
+  it("loads every activity page", async () => {
+    const firstPage = Array.from({ length: 42 }, (_, index) => ({ id: `a${index}` }))
+    get.mockResolvedValueOnce({ data: me }).mockResolvedValueOnce({ data: [] })
+    get
+      .mockResolvedValueOnce({ data: { id: "i", numberInProject: 1 } })
+      .mockResolvedValueOnce({ data: firstPage })
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: [{ id: "a42" }] })
+
+    const client = await YoutrackClient.create(options)
+    const details = await client.getIssueDetails("i")
+
+    expect(details.activities).toHaveLength(43)
+    expect(get).toHaveBeenCalledWith(
+      "/api/issues/i/activities",
+      expect.objectContaining({ params: expect.objectContaining({ $top: 42, $skip: 42 }) })
+    )
+  })
 })
