@@ -21,3 +21,4 @@ out/
 !out/extension.js
 !out/webExtension.js
 test-resources/
+resources/screenshot.png

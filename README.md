@@ -10,7 +10,7 @@ This extension provides basic integration between [YouTrack](https://www.jetbrai
 you to browse your agiles and issues, quickly create or checkout git branches and update issue information. This is an
 unofficial extension and not affiliated with [JetBrains](#copyright-attributions).
 
-<img src="resources/screenshot.png" height="768" alt="Screenshot" />
+<img src="https://raw.githubusercontent.com/maximtrp/youtrack-vscode-extension/main/resources/screenshot.png" height="768" alt="Screenshot" />
 
 ## Installation
 
