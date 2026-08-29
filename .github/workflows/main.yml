@@ -41,7 +41,7 @@ jobs:
         run: npm test
 
       - name: Package
-        run: npx --yes @vscode/vsce@^3 package --out youtrack-ext-${{ github.ref_name }}.vsix
+        run: npm run package:vsix -- --out youtrack-ext-${{ github.ref_name }}.vsix
 
       - name: Attach the package to the release
         run: gh release upload "$GITHUB_REF_NAME" youtrack-ext-${{ github.ref_name }}.vsix --clobber
@@ -49,11 +49,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to Visual Studio Marketplace
-        run: npx --yes @vscode/vsce@^3 publish --packagePath youtrack-ext-${{ github.ref_name }}.vsix
+        run: npm run publish:vscode -- --packagePath youtrack-ext-${{ github.ref_name }}.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Publish to Open VSX
-        run: npx --yes ovsx@^0.10 publish youtrack-ext-${{ github.ref_name }}.vsix
+        run: npm run publish:openvsx -- youtrack-ext-${{ github.ref_name }}.vsix
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}

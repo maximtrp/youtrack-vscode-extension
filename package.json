@@ -1,29 +1,57 @@
 {
   "name": "youtrack-ext",
-  "publisher": "maximtrp",
   "displayName": "YouTrack for VS Code",
+  "version": "2.0.0",
   "description": "Browse and manage issues in multiple YouTrack servers",
-  "version": "1.7.0",
-  "icon": "resources/youtrack.png",
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
   "author": {
     "name": "Maksim Terpilovskii",
     "url": "https://github.com/maximtrp"
   },
-  "engines": {
-    "vscode": "^1.60.0",
-    "node": ">=20"
-  },
-  "license": "MIT",
-  "categories": [
-    "Other"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/maximtrp/youtrack-vscode-extension.git"
   },
-  "activationEvents": [],
+  "publisher": "maximtrp",
   "main": "./out/extension.js",
   "browser": "./out/webExtension.js",
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('out',{recursive:true,force:true})\"",
+    "build": "node build.mjs",
+    "build:production": "npm run clean && node build.mjs --production",
+    "build:watch": "node build.mjs --watch",
+    "check": "npm run typecheck && npm run lint && npm run format:check",
+    "format": "oxfmt src",
+    "format:check": "oxfmt --check src",
+    "lint": "oxlint src",
+    "package:vsix": "vsce package",
+    "publish:openvsx": "ovsx publish",
+    "publish:vscode": "vsce publish",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p ./",
+    "vscode:prepublish": "npm run build:production"
+  },
+  "dependencies": {
+    "axios": "^1.13.0",
+    "marked": "^16.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/vscode": "^1.60.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.28.2",
+    "ovsx": "^0.10.7",
+    "oxfmt": "^0.65.0",
+    "oxlint": "^1.47.0",
+    "typescript": "~5.9",
+    "vitest": "^4.1.11"
+  },
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -723,33 +751,10 @@
       ]
     }
   },
-  "scripts": {
-    "clean": "node -e \"require('fs').rmSync('out',{recursive:true,force:true})\"",
-    "typecheck": "tsc --noEmit -p ./",
-    "lint": "oxlint src",
-    "format": "oxfmt src",
-    "format:check": "oxfmt --check src",
-    "check": "npm run typecheck && npm run lint && npm run format:check",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "build": "node build.mjs",
-    "watch": "node build.mjs --watch",
-    "package": "npm run clean && node build.mjs --production",
-    "vscode:prepublish": "npm run package",
-    "deploy": "vsce publish && ovsx publish",
-    "coverage": "vitest run --coverage"
-  },
-  "devDependencies": {
-    "@types/node": "^20.19.43",
-    "@types/vscode": "^1.60.0",
-    "@vitest/coverage-v8": "^4.1.11",
-    "esbuild": "^0.28.2",
-    "oxfmt": "^0.65.0",
-    "oxlint": "^1.47.0",
-    "typescript": "~5.9",
-    "vitest": "^4.1.11"
-  },
-  "dependencies": {
-    "axios": "^1.13.0"
+  "activationEvents": [],
+  "icon": "resources/youtrack.png",
+  "engines": {
+    "node": ">=20",
+    "vscode": "^1.60.0"
   }
 }

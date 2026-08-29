@@ -1,8 +1,21 @@
 import axios, { AxiosInstance } from "axios"
 import { createHttpsAgent } from "./httpAgent.node"
-import type { Agile, EnumBundle, Issue, IssueCustomFieldUpdate, NewIssue, Project, User } from "./types"
+import type {
+  Agile,
+  EnumBundle,
+  Issue,
+  IssueActivity,
+  IssueCustomFieldUpdate,
+  IssueDetails,
+  IssueWorkItem,
+  NewIssue,
+  Project,
+  User,
+  VcsChange,
+} from "./types"
 
 const REQUEST_TIMEOUT = 15000
+const COLLECTION_PAGE_SIZE = 42
 
 const ISSUE_LIST_FIELDS = [
   "id",
@@ -17,13 +30,41 @@ const ISSUE_LIST_FIELDS = [
   "customFields(name,value(id,name,fullName,login))",
 ].join(",")
 
-const ISSUE_DESCRIPTION_FIELDS = "id,summary,wikifiedDescription"
+const ISSUE_DETAILS_FIELDS = [
+  "id",
+  "numberInProject",
+  "summary",
+  "wikifiedDescription",
+  "created",
+  "updated",
+  "resolved",
+  "votes",
+  "project(id,name,shortName)",
+  "reporter(id,login,fullName)",
+  "updater(id,login,fullName)",
+  "customFields(id,name,$type,value(id,name,fullName,login,$type))",
+  "tags(id,name)",
+  "attachments(id,name,url,size,mimeType,created,updated,author(id,login,fullName))",
+  "comments(id,text,wikifiedText,created,updated,deleted,author(id,login,fullName),attachments(id,name,url,size,mimeType))",
+  "links(id,direction,linkType(name,sourceToTarget,targetToSource),issues(id,numberInProject,summary,project(shortName)))",
+].join(",")
+
+const ISSUE_ACTIVITY_FIELDS = [
+  "id",
+  "timestamp",
+  "author(id,login,fullName)",
+  "category(id,name)",
+  "field(id,name)",
+  "added(id,name,text,fullName,login)",
+  "removed(id,name,text,fullName,login)",
+  "target(id,summary)",
+].join(",")
 
 const AGILE_FIELDS = [
   "id",
   "name",
   "owner(id,name)",
-  "projects(id,name,shortName,archived,customFields(name,value(name)))",
+  "projects(id,name,shortName,archived,customFields(id,field(id,name),bundle(values(id,name))))",
   "sprints(id,name,unresolvedIssuesCount,start,finish,archived)",
   "columnSettings(field(id,name),columns(presentation,isResolved,fieldValues(id,name)))",
   "sprintsSettings(id,disableSprints)",
@@ -99,6 +140,15 @@ export class YoutrackClient {
     return (await this.http.post<T>(url, data, { params })).data
   }
 
+  private async getAll<T>(url: string, params?: object): Promise<T[]> {
+    const loadPage = async (skip: number): Promise<T[]> => {
+      const page = await this.get<T[]>(url, { ...params, $top: COLLECTION_PAGE_SIZE, $skip: skip })
+      if (page.length < COLLECTION_PAGE_SIZE) return page
+      return [...page, ...(await loadPage(skip + COLLECTION_PAGE_SIZE))]
+    }
+    return loadPage(0)
+  }
+
   getAgiles(): Promise<Agile[]> {
     return this.get<Agile[]>("/api/agiles", { fields: AGILE_FIELDS })
   }
@@ -128,8 +178,31 @@ export class YoutrackClient {
     })
   }
 
-  getIssueDescription(issueId: string): Promise<Issue> {
-    return this.get<Issue>(`/api/issues/${issueId}`, { fields: ISSUE_DESCRIPTION_FIELDS })
+  async getIssueDetails(issueId: string): Promise<IssueDetails> {
+    const issue = await this.get<Issue>(`/api/issues/${issueId}`, { fields: ISSUE_DETAILS_FIELDS })
+    const [activityResult, workItemResult, vcsResult] = await Promise.allSettled([
+      this.getAll<IssueActivity>(`/api/issues/${issueId}/activities`, {
+        fields: ISSUE_ACTIVITY_FIELDS,
+        categories: "CustomFieldCategory,IssueResolvedCategory",
+      }),
+      this.getAll<IssueWorkItem>(`/api/issues/${issueId}/timeTracking/workItems`, {
+        fields:
+          "id,date,created,updated,text,textPreview,duration(minutes,presentation),type(id,name),author(id,login,fullName),creator(id,login,fullName)",
+      }),
+      this.getAll<VcsChange>(`/api/issues/${issueId}/vcsChanges`, {
+        fields: "id,$type,date,files,text,urls,version,author(name,fullName,login)",
+      }),
+    ])
+    const activities = activityResult.status === "fulfilled" ? activityResult.value : []
+    const workItems = workItemResult.status === "fulfilled" ? workItemResult.value : []
+    const vcsChanges = vcsResult.status === "fulfilled" ? vcsResult.value : []
+    return {
+      issue: { ...issue, workItems, vcsChanges },
+      activities,
+      activityError: activityResult.status === "rejected" ? activityResult.reason : undefined,
+      workItemError: workItemResult.status === "rejected" ? workItemResult.reason : undefined,
+      vcsError: vcsResult.status === "rejected" ? vcsResult.reason : undefined,
+    }
   }
 
   addIssue(issue: NewIssue): Promise<Issue> {
